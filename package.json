@@ -1,0 +1,31 @@
+{
+  "name": "livebid-backend",
+  "version": "1.0.0",
+  "description": "bidding platform",
+  "homepage": "https://github.com/shubham-Alhat/live-bidding-backend#readme",
+  "bugs": {
+    "url": "https://github.com/shubham-Alhat/live-bidding-backend/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shubham-Alhat/live-bidding-backend.git"
+  },
+  "license": "ISC",
+  "author": "shubham-Alhat",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon --watch src --ext ts --exec tsx src/index.ts"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.0.10",
+    "nodemon": "^3.1.11",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
