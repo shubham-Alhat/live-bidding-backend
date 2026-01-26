@@ -1,0 +1,86 @@
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+
+model User {
+    id String @id @default(cuid())
+    username String
+    email String @unique
+    password String 
+    products Product[] @relation("products-own-by-User")
+    auctions Auction[] @relation("auctionUserOwns")
+    winningAuctions Auction[] @relation("userWhoWonThisAuction")
+    bids Bid[] @relation("userWhoBid")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+
+model Product {
+    id String @id @default(cuid())
+    name String
+    images String[]
+    ownerId String
+    owner User @relation("products-own-by-User", fields:[ownerId], references:[id])
+    auctionId String?
+    auction Auction? @relation("auctionThisProductBelongsTo",fields:[auctionId],references:[id])
+    biddings Bid[] @relation("allBiddingsForThisProduct")
+    initialPrice Decimal 
+    bidFinalPrice Decimal?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+
+model Bid {
+    id String @id @default(cuid())
+    price Decimal
+    bidderId String
+    bidder User @relation("userWhoBid",fields:[bidderId],references:[id])
+    productId String
+    product Product @relation("allBiddingsForThisProduct",fields:[productId],references:[id])
+    auctionId String
+    auction Auction @relation("bidsInAuction",fields:[auctionId],references:[id])
+    winningAuction Auction? @relation("winningBid")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+enum STATUS {
+    SCHEDULED
+    ACTIVE
+    ENDED
+    CANCELLED
+}
+
+
+model Auction {
+    id String @id @default(cuid())
+    ownerId String
+    owner User @relation("auctionUserOwns",fields:[ownerId],references:[id])
+    winnerId String?
+    winner User? @relation("userWhoWonThisAuction",fields:[winnerId], references:[id])
+    winningBidId String? @unique //  Added @unique since one auction = one winning bid
+    winningBid Bid? @relation("winningBid",fields:[winningBidId], references:[id])
+    biddings Bid[] @relation("bidsInAuction")
+    products Product[] @relation("auctionThisProductBelongsTo")
+    startTime DateTime
+    endTime DateTime
+    startingPrice Decimal
+    finalBidPrice Decimal?
+    minBidIncrement Decimal @default(1.00)
+    status STATUS @default(SCHEDULED) 
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+
+    
