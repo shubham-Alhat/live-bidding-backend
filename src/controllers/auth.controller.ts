@@ -30,7 +30,7 @@ export const loginUser = async (req: Request, res: Response) => {
         .json({ message: "All fields are required", data: null });
     }
 
-    // find the user if exists
+    // find the user
     const user = await prisma.user.findUnique({
       where: {
         email: email,
@@ -91,7 +91,7 @@ export const signupUser = async (req: Request, res: Response) => {
       });
     }
 
-    // check existing user
+    // check existing user email
     const existingEmail = await prisma.user.findUnique({
       where: {
         email: email,
@@ -124,5 +124,24 @@ export const signupUser = async (req: Request, res: Response) => {
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Error in signup", data: null });
+  }
+};
+
+export const getCurrentUser = async (req: Request, res: Response) => {
+  try {
+    const currentUser = req.user;
+
+    if (!currentUser) {
+      return res.status(404).json({ message: "User not found!!", data: null });
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Current user found", data: currentUser });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Error in getting user", data: null });
   }
 };
