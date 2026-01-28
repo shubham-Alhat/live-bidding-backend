@@ -129,7 +129,7 @@ export const signupUser = async (req: Request, res: Response) => {
 
 export const getCurrentUser = async (req: Request, res: Response) => {
   try {
-    const currentUser = req.user;
+    const currentUser = req.authUser;
 
     if (!currentUser) {
       return res.status(404).json({ message: "User not found!!", data: null });

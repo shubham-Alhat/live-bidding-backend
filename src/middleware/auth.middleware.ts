@@ -49,7 +49,7 @@ const authMiddleware = async (
         .json({ message: "User not found in middleware", data: null });
     }
 
-    req.user = user;
+    req.authUser = user;
 
     next();
   } catch (error) {
