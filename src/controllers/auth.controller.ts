@@ -145,3 +145,29 @@ export const getCurrentUser = async (req: Request, res: Response) => {
       .json({ message: "Error in getting user", data: null });
   }
 };
+
+export const logoutUser = async (req: Request, res: Response) => {
+  try {
+    const currentUser = req.authUser;
+
+    if (!currentUser) {
+      return res
+        .status(404)
+        .json({ message: "User not found in middleware", data: null });
+    }
+
+    return res
+      .status(200)
+      .clearCookie("accessToken", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        maxAge: 24 * 60 * 60 * 1000,
+        path: "/",
+      })
+      .json({ message: "User logout successfully", data: null });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Error in logout", data: null });
+  }
+};
