@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -22,19 +21,22 @@ model User {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }
-
+enum PRODUCTSTATUS {
+    LIVE
+    NOTLIVE
+    ARCHIVE
+}
 
 model Product {
     id String @id @default(cuid())
     name String
-    images String[]
+    image String
+    status PRODUCTSTATUS @default(NOTLIVE)
     ownerId String
     owner User @relation("products-own-by-User", fields:[ownerId], references:[id])
-    auctionId String?
-    auction Auction? @relation("auctionThisProductBelongsTo",fields:[auctionId],references:[id])
-    biddings Bid[] @relation("allBiddingsForThisProduct")
+    auctions Auction[] @relation("auctionThisProductBelongsTo")              
     initialPrice Decimal 
-    bidFinalPrice Decimal?
+    durationInSeconds Int
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }
@@ -45,8 +47,6 @@ model Bid {
     price Decimal
     bidderId String
     bidder User @relation("userWhoBid",fields:[bidderId],references:[id])
-    productId String
-    product Product @relation("allBiddingsForThisProduct",fields:[productId],references:[id])
     auctionId String
     auction Auction @relation("bidsInAuction",fields:[auctionId],references:[id])
     winningAuction Auction? @relation("winningBid")
@@ -55,10 +55,10 @@ model Bid {
 }
 
 enum STATUS {
-    SCHEDULED
+    
     ACTIVE
     ENDED
-    CANCELLED
+    
 }
 
 
@@ -71,16 +71,14 @@ model Auction {
     winningBidId String? @unique //  Added @unique since one auction = one winning bid
     winningBid Bid? @relation("winningBid",fields:[winningBidId], references:[id])
     biddings Bid[] @relation("bidsInAuction")
-    products Product[] @relation("auctionThisProductBelongsTo")
-    startTime DateTime
-    endTime DateTime
+    productId String
+    product Product @relation("auctionThisProductBelongsTo", fields:[productId],references:[id])
+    startTime DateTime?
+    endTime DateTime?
+    auctionDuration Int
     startingPrice Decimal
     finalBidPrice Decimal?
-    minBidIncrement Decimal @default(1.00)
-    status STATUS @default(SCHEDULED) 
+    status STATUS @default(ACTIVE) 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }
-
-
-    
