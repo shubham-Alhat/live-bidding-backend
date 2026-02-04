@@ -56,7 +56,7 @@ export const createNewProduct = async (req: Request, res: Response) => {
 
 export const launchProduct = async (req: Request, res: Response) => {
   try {
-    const { productId } = req.body;
+    const productId = req.params.productId as string;
 
     const user = req.authUser;
 
@@ -129,7 +129,9 @@ export const deleteProduct = async (req: Request, res: Response) => {
       },
     });
 
-    return res.status(200).json({ message: "Product deleted", data: null });
+    return res
+      .status(200)
+      .json({ message: "Product deleted successfully", data: null });
   } catch (error) {
     console.log(error);
     return res
