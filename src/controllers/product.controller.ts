@@ -53,3 +53,114 @@ export const createNewProduct = async (req: Request, res: Response) => {
       .json({ message: "Error in create new product", data: null });
   }
 };
+
+export const launchProduct = async (req: Request, res: Response) => {
+  try {
+    const { productId } = req.body;
+
+    const user = req.authUser;
+
+    // check if product exist
+    const isProductExist = await prisma.product.findUnique({
+      where: {
+        id: productId,
+      },
+    });
+
+    if (!isProductExist) {
+      return res.status(404).json({ message: "Product not found", data: null });
+    }
+
+    // check if it is already lauched or archived
+    if (isProductExist.status === "LIVE") {
+      return res.status(400).json({ message: "Already launched", data: null });
+    }
+
+    const launchedProduct = await prisma.product.update({
+      where: {
+        id: isProductExist.id,
+        name: isProductExist.name,
+      },
+      data: {
+        status: "LIVE",
+      },
+
+      omit: {
+        createdAt: true,
+      },
+    });
+
+    return res
+      .status(200)
+      .json({ message: "Product launched", data: launchedProduct });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Error in launch product", data: null });
+  }
+};
+
+export const deleteProduct = async (req: Request, res: Response) => {
+  try {
+    const productId = req.params.productId as string;
+
+    if (!productId) {
+      return res
+        .status(404)
+        .json({ message: "product id not found", data: null });
+    }
+
+    // check if its exist
+    const isExistingProduct = await prisma.product.findUnique({
+      where: {
+        id: productId,
+      },
+    });
+
+    if (!isExistingProduct) {
+      return res.status(404).json({ message: "Product not found", data: null });
+    }
+
+    // delete the product
+    await prisma.product.delete({
+      where: {
+        id: productId,
+      },
+    });
+
+    return res.status(200).json({ message: "Product deleted", data: null });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Error in delete product", data: null });
+  }
+};
+
+export const getAllProducts = async (req: Request, res: Response) => {
+  try {
+    const user = req.authUser;
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ message: "User not in middleware", data: null });
+    }
+
+    const allProducts = await prisma.product.findMany({
+      where: {
+        ownerId: user.id,
+      },
+    });
+
+    return res
+      .status(200)
+      .json({ message: "All products owned by user", data: allProducts });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Error while getting all products", data: null });
+  }
+};
