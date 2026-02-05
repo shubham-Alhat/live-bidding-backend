@@ -166,3 +166,64 @@ export const getAllProducts = async (req: Request, res: Response) => {
       .json({ message: "Error while getting all products", data: null });
   }
 };
+
+export const getTheProduct = async (req: Request, res: Response) => {
+  try {
+    const productId = req.params.id as string;
+
+    if (!productId) {
+      return res
+        .status(400)
+        .json({ message: "id not found in params", data: null });
+    }
+
+    const existingProduct = await prisma.product.findUnique({
+      where: {
+        id: productId,
+      },
+    });
+
+    if (!existingProduct) {
+      return res
+        .status(404)
+        .json({ message: "product not found!", data: null });
+    }
+
+    return res
+      .status(200)
+      .json({ message: "get the product", data: existingProduct });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Error in getting product by id", data: null });
+  }
+};
+
+export const getAllAuctions = async (req: Request, res: Response) => {
+  try {
+    const user = req.authUser;
+
+    if (!user || user.id) {
+      return res.status(404).json({ message: "User not found", data: null });
+    }
+
+    const allAuctions = await prisma.product.findMany({
+      where: {
+        status: "LIVE",
+        NOT: {
+          ownerId: user.id,
+        },
+      },
+    });
+
+    return res
+      .status(200)
+      .json({ message: "All auctions fetched.", data: allAuctions });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Error in all Auctions", data: null });
+  }
+};
