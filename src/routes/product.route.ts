@@ -14,7 +14,7 @@ router
   .route("/create")
   .post(authMiddleware, upload.single("image"), createNewProduct);
 
-router.route("/launch").put(authMiddleware, launchProduct);
+router.route("/launch/:productId").put(authMiddleware, launchProduct);
 router.route("/:productId").delete(authMiddleware, deleteProduct);
 router.route("/get-all").get(authMiddleware, getAllProducts);
 
