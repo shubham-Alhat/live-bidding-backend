@@ -60,6 +60,12 @@ export const launchProduct = async (req: Request, res: Response) => {
 
     const user = req.authUser;
 
+    if (!user) {
+      return res
+        .status(400)
+        .json({ message: "User not found in mid", data: null });
+    }
+
     // check if product exist
     const isProductExist = await prisma.product.findUnique({
       where: {
@@ -87,6 +93,16 @@ export const launchProduct = async (req: Request, res: Response) => {
 
       omit: {
         createdAt: true,
+      },
+    });
+
+    // create a auction
+    const newAuction = await prisma.auction.create({
+      data: {
+        ownerId: user.id,
+        productId: launchedProduct.id,
+        auctionDuration: launchedProduct.durationInSeconds,
+        startingPrice: launchedProduct.initialPrice,
       },
     });
 
@@ -197,33 +213,5 @@ export const getTheProduct = async (req: Request, res: Response) => {
     return res
       .status(500)
       .json({ message: "Error in getting product by id", data: null });
-  }
-};
-
-export const getAllAuctions = async (req: Request, res: Response) => {
-  try {
-    const user = req.authUser;
-
-    if (!user || user.id) {
-      return res.status(404).json({ message: "User not found", data: null });
-    }
-
-    const allAuctions = await prisma.product.findMany({
-      where: {
-        status: "LIVE",
-        NOT: {
-          ownerId: user.id,
-        },
-      },
-    });
-
-    return res
-      .status(200)
-      .json({ message: "All auctions fetched.", data: allAuctions });
-  } catch (error) {
-    console.log(error);
-    return res
-      .status(500)
-      .json({ message: "Error in all Auctions", data: null });
   }
 };

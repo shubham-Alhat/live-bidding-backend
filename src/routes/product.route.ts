@@ -4,7 +4,6 @@ import { upload } from "../middleware/multer.middleware.js";
 import {
   createNewProduct,
   deleteProduct,
-  getAllAuctions,
   getAllProducts,
   getTheProduct,
   launchProduct,
@@ -20,6 +19,5 @@ router.route("/launch/:productId").put(authMiddleware, launchProduct);
 router.route("/:productId").delete(authMiddleware, deleteProduct);
 router.route("/get-all").get(authMiddleware, getAllProducts);
 router.route("/:id").get(authMiddleware, getTheProduct);
-router.route("/all-product").get(authMiddleware, getAllAuctions);
 
 export default router;
