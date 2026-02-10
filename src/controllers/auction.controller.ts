@@ -67,3 +67,37 @@ export const getAuctionById = async (req: Request, res: Response) => {
       .json({ message: "Error in auction by id", data: null });
   }
 };
+
+export const getAuctionByProductId = async (req: Request, res: Response) => {
+  try {
+    const productId = req.params.id as string;
+
+    if (!productId) {
+      return res
+        .status(400)
+        .json({ message: "productId not found", data: null });
+    }
+
+    const existingAuction = await prisma.auction.findFirst({
+      where: {
+        productId: productId,
+      },
+      include: {
+        product: true,
+      },
+    });
+
+    if (!existingAuction) {
+      return res.status(404).json({ message: "auction not found", data: null });
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Auction found.", data: existingAuction });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Error in auction by productId", data: null });
+  }
+};

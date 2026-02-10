@@ -48,7 +48,7 @@ model Bid {
     bidderId String
     bidder User @relation("userWhoBid",fields:[bidderId],references:[id])
     auctionId String
-    auction Auction @relation("bidsInAuction",fields:[auctionId],references:[id])
+    auction Auction @relation("bidsInAuction",fields:[auctionId],references:[id],onDelete: Cascade)
     winningAuction Auction? @relation("winningBid")
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -72,7 +72,7 @@ model Auction {
     winningBid Bid? @relation("winningBid",fields:[winningBidId], references:[id])
     biddings Bid[] @relation("bidsInAuction")
     productId String
-    product Product @relation("auctionThisProductBelongsTo", fields:[productId],references:[id])
+    product Product @relation("auctionThisProductBelongsTo", fields:[productId],references:[id],onDelete: Cascade)
     startTime DateTime?
     endTime DateTime?
     auctionDuration Int
