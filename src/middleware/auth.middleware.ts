@@ -4,7 +4,7 @@ import { prisma } from "../db/prisma.js";
 import dotenv from "dotenv";
 dotenv.config();
 
-type decodedTokenState = {
+export type decodedTokenState = {
   id: string;
   email: string;
 };

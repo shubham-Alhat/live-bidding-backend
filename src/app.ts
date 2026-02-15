@@ -1,6 +1,5 @@
 import express from "express";
 import http from "http";
-import { WebSocketServer } from "ws";
 import authRouter from "./routes/auth.route.js";
 import productRouter from "./routes/product.route.js";
 import auctionRouter from "./routes/auction.route.js";
@@ -10,6 +9,8 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import passport from "passport";
 import "../src/passport/googleStrategy.js";
+import { initWebsocketServer } from "./websocket/index.js";
+
 dotenv.config();
 
 const app = express();
@@ -30,6 +31,8 @@ app.use(express.static("public"));
 app.use(passport.initialize());
 
 const server = http.createServer(app);
+
+initWebsocketServer(server);
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/product", productRouter);
