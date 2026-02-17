@@ -69,6 +69,11 @@ export class WebSocketManager {
         ws.on("close", () => {
           console.log(`🔴 User disconnected ${decodedToken.id}`);
         });
+
+        ws.on("error", (err: Error) => {
+          console.error(`WebSocket error for ${decodedToken.id}:`, err);
+          ws.close();
+        });
       },
     );
   };
