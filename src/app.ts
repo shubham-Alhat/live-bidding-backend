@@ -9,7 +9,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import passport from "passport";
 import "../src/passport/googleStrategy.js";
-import { initWebsocketServer } from "./websocket/index.js";
+import { WebSocketManager } from "./websocket/websocketManager.js";
 
 dotenv.config();
 
@@ -32,7 +32,7 @@ app.use(passport.initialize());
 
 const server = http.createServer(app);
 
-initWebsocketServer(server);
+const wsManager = new WebSocketManager(server);
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/product", productRouter);
