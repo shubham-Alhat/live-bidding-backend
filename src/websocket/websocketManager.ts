@@ -4,6 +4,10 @@ import type { decodedTokenState } from "../middleware/auth.middleware.js";
 import jwt from "jsonwebtoken";
 import { WebSocketServer, WebSocket } from "ws";
 import dotenv from "dotenv";
+import {
+  addUserConnection,
+  removeUserConnection,
+} from "./libs/connectionManager.js";
 dotenv.config();
 
 function onSocketError(err: Error) {
@@ -66,13 +70,17 @@ export class WebSocketManager {
       ) => {
         console.log(`🟢 New connection ${decodedToken.id}`);
 
+        addUserConnection(decodedToken.id, ws);
+
         ws.on("close", () => {
           console.log(`🔴 User disconnected ${decodedToken.id}`);
+          removeUserConnection(decodedToken.id);
         });
 
         ws.on("error", (err: Error) => {
           console.error(`WebSocket error for ${decodedToken.id}:`, err);
           ws.close();
+          removeUserConnection(decodedToken.id);
         });
       },
     );
