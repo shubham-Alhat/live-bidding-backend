@@ -82,6 +82,16 @@ export class WebSocketManager {
           ws.close();
           removeUserConnection(decodedToken.id);
         });
+
+        ws.on("message", (rawData) => {
+          try {
+            const data = JSON.parse(rawData.toString());
+
+            console.log(data);
+          } catch (error) {
+            console.error("Error parsing WebSocket message:", error);
+          }
+        });
       },
     );
   };

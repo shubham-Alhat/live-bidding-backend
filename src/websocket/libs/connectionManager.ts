@@ -18,10 +18,9 @@ export const removeUserConnection = (userId: string) => {
   if (activeConnections.has(userId)) {
     activeConnections.delete(userId);
     console.log(`userId ${userId} is removed`);
-    console.log(activeConnections);
+
     return;
   }
 
   console.log(`userId ${userId} not found in activeConnections`);
-  console.log(activeConnections);
 };
