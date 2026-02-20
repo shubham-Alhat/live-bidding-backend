@@ -4,10 +4,8 @@ import type { decodedTokenState } from "../middleware/auth.middleware.js";
 import jwt from "jsonwebtoken";
 import { WebSocketServer, WebSocket } from "ws";
 import dotenv from "dotenv";
-import {
-  addUserConnection,
-  removeUserConnection,
-} from "./libs/connectionManager.js";
+import { EventRouter } from "./eventRouter.js";
+
 dotenv.config();
 
 function onSocketError(err: Error) {
@@ -16,10 +14,13 @@ function onSocketError(err: Error) {
 
 export class WebSocketManager {
   private wss: WebSocketServer;
+  private router: EventRouter;
+
   constructor(server: http.Server) {
     this.wss = new WebSocketServer({ noServer: true, path: "/ws" });
     this.handleUpgradeConnection(server);
     this.connectToWsServer();
+    this.router = new EventRouter();
   }
 
   private handleUpgradeConnection = (server: http.Server) => {
@@ -70,24 +71,20 @@ export class WebSocketManager {
       ) => {
         console.log(`🟢 New connection ${decodedToken.id}`);
 
-        addUserConnection(decodedToken.id, ws);
-
         ws.on("close", () => {
           console.log(`🔴 User disconnected ${decodedToken.id}`);
-          removeUserConnection(decodedToken.id);
         });
 
         ws.on("error", (err: Error) => {
           console.error(`WebSocket error for ${decodedToken.id}:`, err);
           ws.close();
-          removeUserConnection(decodedToken.id);
         });
 
         ws.on("message", (rawData) => {
           try {
             const data = JSON.parse(rawData.toString());
 
-            console.log(data);
+            this.router.route(ws, decodedToken.id, data);
           } catch (error) {
             console.error("Error parsing WebSocket message:", error);
           }
