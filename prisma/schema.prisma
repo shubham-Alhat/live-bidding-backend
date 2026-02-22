@@ -73,8 +73,7 @@ model Auction {
     biddings Bid[] @relation("bidsInAuction")
     productId String
     product Product @relation("auctionThisProductBelongsTo", fields:[productId],references:[id],onDelete: Cascade)
-    startTime DateTime?
-    endTime DateTime?
+    startTime DateTime
     auctionDuration Int
     startingPrice Decimal
     finalBidPrice Decimal?

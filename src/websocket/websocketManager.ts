@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import { WebSocketServer, WebSocket } from "ws";
 import dotenv from "dotenv";
 import { EventRouter } from "./eventRouter.js";
+import { connectionManager } from "./connectionManager.js";
 
 dotenv.config();
 
@@ -44,6 +45,12 @@ export class WebSocketManager {
           secretKey,
         ) as decodedTokenState;
 
+        if (!decodedToken) {
+          socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
+          socket.destroy();
+          return;
+        }
+
         // remove error listener when successfull connection.
         // now we need cleanup because now its all of ws. not a raw TCP connection.
         // further error will get handled by ws now
@@ -70,9 +77,16 @@ export class WebSocketManager {
         decodedToken: decodedTokenState,
       ) => {
         console.log(`🟢 New connection ${decodedToken.id}`);
+        connectionManager.addNewConnection(decodedToken.id, ws);
 
         ws.on("close", () => {
-          console.log(`🔴 User disconnected ${decodedToken.id}`);
+          console.log("onclose event fires 🔥");
+          if (connectionManager.getConnection(decodedToken.id) === ws) {
+            // remove only if matches the socket
+            // if dont have condition, it will delete user's current socket conn
+            connectionManager.removeConnection(decodedToken.id);
+            console.log(`🔴 User disconnected ${decodedToken.id}`);
+          }
         });
 
         ws.on("error", (err: Error) => {

@@ -10,6 +10,7 @@ import cors from "cors";
 import passport from "passport";
 import "../src/passport/googleStrategy.js";
 import { WebSocketManager } from "./websocket/websocketManager.js";
+import { connectionManager } from "./websocket/connectionManager.js";
 
 dotenv.config();
 

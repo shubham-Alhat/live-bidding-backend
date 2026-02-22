@@ -1,6 +1,10 @@
 import type { Request, Response } from "express";
 import { uploadOnCloudinary } from "../lib/cloudinary.js";
 import { prisma } from "../db/prisma.js";
+import {
+  auctionInstances,
+  AuctionManager,
+} from "../websocket/auctionStateManager.js";
 
 export const createNewProduct = async (req: Request, res: Response) => {
   try {
@@ -102,9 +106,19 @@ export const launchProduct = async (req: Request, res: Response) => {
         ownerId: user.id,
         productId: launchedProduct.id,
         auctionDuration: launchedProduct.durationInSeconds,
+        startTime: new Date().toISOString(),
         startingPrice: launchedProduct.initialPrice,
       },
     });
+
+    // create new auction instance
+    const auctionInsta = new AuctionManager({
+      ...newAuction,
+      startingPrice: newAuction.startingPrice.toNumber(),
+      finalBidPrice: newAuction.finalBidPrice?.toNumber() ?? null,
+    });
+
+    auctionInstances.set(newAuction.id, auctionInsta);
 
     return res
       .status(200)

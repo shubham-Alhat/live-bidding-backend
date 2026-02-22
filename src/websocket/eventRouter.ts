@@ -16,7 +16,7 @@ export class EventRouter {
         break;
 
       case "get_all_auctions":
-        console.log("get-all-auctions whicb are live");
+        console.log("get-all-auctions which are live");
         break;
 
       default:
