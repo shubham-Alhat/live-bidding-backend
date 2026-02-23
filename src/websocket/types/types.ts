@@ -1,3 +1,5 @@
+import type WebSocket from "ws";
+
 export interface User {
   id: string;
   username: string;
@@ -86,6 +88,7 @@ export interface AuctionBid {
 
 export interface AuctionParticipant {
   userId: string;
+  username: string;
   ws: WebSocket;
   joinedAt: number;
 }

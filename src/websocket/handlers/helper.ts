@@ -24,5 +24,3 @@ export const initAuctionState = (auction: Auction) => {
 
   return remainingTime;
 };
-
-export const 
