@@ -30,6 +30,7 @@ export const joinAuction = (
     payload: {
       userId: userId,
       username: username,
+      joinedAt: Date.now(),
     },
   };
 
@@ -39,4 +40,113 @@ export const joinAuction = (
       participant.ws.send(JSON.stringify(rawData));
     }
   });
+};
+
+export const leaveAuction = (
+  userId: string,
+  username: string,
+  auctionId: string,
+) => {
+  const auctionState = auctionRegistry.get(auctionId);
+
+  if (!auctionState) {
+    console.log("auction not found..");
+    return;
+  }
+
+  // delete user from participants
+  const isdeleted = auctionState.participants.delete(userId);
+
+  // decrement viewerCount
+  if (isdeleted) auctionState.viewerCount = auctionState.viewerCount - 1;
+
+  const rawData = {
+    type: "user_leave_auction",
+    payload: {
+      userId: userId,
+      username: username,
+    },
+  };
+
+  auctionState.participants.forEach((participant) => {
+    if (participant.ws.readyState === WebSocket.OPEN) {
+      participant.ws.send(JSON.stringify(rawData));
+    }
+  });
+};
+
+export const placeNewBid = (
+  userId: string,
+  username: string,
+  bidAmount: number,
+  timestamp: number,
+  auctionId: string,
+  ws: WebSocket,
+) => {
+  // get the auction room
+  const auctionState = auctionRegistry.get(auctionId);
+
+  if (!auctionState) {
+    console.log("auction not found while bidding");
+    return;
+  }
+
+  if (auctionState.currentHighestBid) {
+    // check if highest bid than prev
+    if (bidAmount < auctionState.currentHighestBid.amount) {
+      ws.send(
+        JSON.stringify({
+          type: "invalid_bid",
+          payload: { auctionId: auctionId, userId: userId, username: username },
+        }),
+      );
+
+      return;
+    }
+  }
+
+  // save current highest bid
+  auctionState.currentHighestBid = {
+    amount: bidAmount,
+    timestamp: timestamp,
+    userId: userId,
+    userName: username,
+  };
+
+  // add to bids array
+  auctionState.bids.push({
+    amount: bidAmount,
+    timestamp: timestamp,
+    userId: userId,
+    userName: username,
+  });
+
+  // create a rawData
+  const rawData = {
+    type: "new_bid_placed",
+    payload: {
+      userId: userId,
+      username: username,
+      bidAmount: bidAmount,
+      auctionId: auctionId,
+    },
+  };
+
+  // broadcast to all
+  auctionState.participants.forEach((participant) => {
+    if (participant.ws.readyState === WebSocket.OPEN) {
+      participant.ws.send(JSON.stringify(rawData));
+    }
+  });
+};
+
+export const getAllLiveAuctions = (userId: string, ws: WebSocket) => {
+  const rawData = {
+    type: "live_auctions_feed",
+    payload: {
+      liveAuctions: auctionRegistry,
+    },
+  };
+
+  ws.send(JSON.stringify(rawData));
 };

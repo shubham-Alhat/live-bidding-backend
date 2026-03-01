@@ -79,11 +79,10 @@ export interface ApiRes<T> {
 }
 
 export interface AuctionBid {
-  bidId: string;
   userId: string;
   amount: number;
   timestamp: number;
-  userName?: string;
+  userName: string;
 }
 
 export interface AuctionParticipant {

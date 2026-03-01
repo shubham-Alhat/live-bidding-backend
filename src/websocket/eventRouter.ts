@@ -1,4 +1,9 @@
 import type WebSocket from "ws";
+import {
+  getAllLiveAuctions,
+  joinAuction,
+  leaveAuction,
+} from "./handlers/auctionHandler.js";
 interface RawDataState {
   type: string;
   payload: any;
@@ -8,19 +13,23 @@ export class EventRouter {
   async route(
     ws: WebSocket,
     userId: string,
-    rawData: RawDataState,
+    data: RawDataState,
   ): Promise<void> {
-    switch (rawData.type) {
+    switch (data.type) {
       case "user_connected":
-        console.log(`user_conncted ${userId} event hit..`);
+        getAllLiveAuctions(userId, ws);
         break;
 
-      case "get_all_auctions":
-        console.log("get-all-auctions which are live");
+      case "user_joined_auction_room":
+        joinAuction(userId, data.payload.username, data.payload.auctionId, ws);
+        break;
+
+      case "leave_auction":
+        leaveAuction(userId, data.payload.username, data.payload.auctionId);
         break;
 
       default:
-        console.log(`Unknown event type: ${rawData.type}`);
+        console.log(`Unknown event type: ${data.type}`);
     }
   }
 }

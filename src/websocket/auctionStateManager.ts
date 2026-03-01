@@ -35,6 +35,8 @@ export class AuctionManager {
 
     if (!auctionState) return;
 
+    auctionState.status = "ended";
+
     const rawData = {
       type: "auction_ended",
       payload: {
