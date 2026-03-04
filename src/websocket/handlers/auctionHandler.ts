@@ -1,5 +1,6 @@
 import WebSocket from "ws";
 import { auctionRegistry } from "../auctionStateManager.js";
+import { serializeAuctionState } from "./helper.js";
 
 export const joinAuction = (
   userId: string,
@@ -14,15 +15,18 @@ export const joinAuction = (
     return;
   }
 
+  // check if user already joined auction
+  if (!auctionState.participants.get(userId)) {
+    // increase viewerCount only if user join newly
+    auctionState.viewerCount = auctionState.viewerCount + 1;
+  }
+
   auctionState.participants.set(userId, {
     userId: userId,
     username: username,
     ws: ws,
     joinedAt: Date.now(),
   });
-
-  // increase viewerCount
-  auctionState.viewerCount = auctionState.viewerCount + 1;
 
   // create rawData
   const rawData = {
@@ -31,6 +35,7 @@ export const joinAuction = (
       userId: userId,
       username: username,
       joinedAt: Date.now(),
+      auctionState: serializeAuctionState(auctionState),
     },
   };
 
@@ -54,6 +59,12 @@ export const leaveAuction = (
     return;
   }
 
+  // check if participant exist
+  if (!auctionState.participants.get(userId)) {
+    console.log("participant not found..");
+    return;
+  }
+
   // delete user from participants
   const isdeleted = auctionState.participants.delete(userId);
 
@@ -65,6 +76,7 @@ export const leaveAuction = (
     payload: {
       userId: userId,
       username: username,
+      auctionState: serializeAuctionState(auctionState),
     },
   };
 
@@ -144,7 +156,9 @@ export const getAllLiveAuctions = (userId: string, ws: WebSocket) => {
   const rawData = {
     type: "live_auctions_feed",
     payload: {
-      liveAuctions: auctionRegistry,
+      liveAuctions: Array.from(auctionRegistry.values()).map(
+        serializeAuctionState,
+      ),
     },
   };
 

@@ -51,6 +51,10 @@ export const getAuctionById = async (req: Request, res: Response) => {
       where: {
         id: auctionId,
       },
+      include: {
+        product: true,
+        owner: true,
+      },
     });
 
     if (!existingAuction) {

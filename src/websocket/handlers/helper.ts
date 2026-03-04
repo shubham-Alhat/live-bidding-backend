@@ -1,4 +1,8 @@
-import type { Auction } from "../types/types.js";
+import type {
+  Auction,
+  AuctionState,
+  AuctionStateSerialize,
+} from "../types/types.js";
 import { auctionRegistry } from "../auctionStateManager.js";
 
 export const initAuctionState = (auction: Auction) => {
@@ -23,4 +27,26 @@ export const initAuctionState = (auction: Auction) => {
   }
 
   return remainingTime;
+};
+
+export const serializeAuctionState = (
+  state: AuctionState,
+): AuctionStateSerialize => {
+  return {
+    auctionId: state.auctionId,
+    viewerCount: state.viewerCount,
+    bids: state.bids,
+    currentHighestBid: state.currentHighestBid,
+    startTime: state.startTime,
+    endTime: state.endTime,
+    remainingTime: state.remainingTime,
+    status: state.status,
+    participants: Array.from(state.participants.values()).map(
+      ({ userId, username, joinedAt }) => ({
+        userId,
+        username,
+        joinedAt,
+      }),
+    ),
+  };
 };

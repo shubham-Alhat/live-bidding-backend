@@ -85,6 +85,11 @@ export interface AuctionBid {
   userName: string;
 }
 
+export interface RawDataState {
+  type: string;
+  payload: any;
+}
+
 export interface AuctionParticipant {
   userId: string;
   username: string;
@@ -102,4 +107,21 @@ export interface AuctionState {
   endTime: number;
   remainingTime: number;
   status: "pending" | "active" | "ended";
+}
+
+// Serialize for sending data via ws to frontend
+export interface AuctionStateSerialize {
+  auctionId: string;
+  viewerCount: number;
+  bids: AuctionBid[];
+  currentHighestBid: AuctionBid | null;
+  startTime: number;
+  endTime: number;
+  remainingTime: number;
+  status: "pending" | "active" | "ended";
+  participants: {
+    userId: string;
+    username: string;
+    joinedAt: number;
+  }[];
 }

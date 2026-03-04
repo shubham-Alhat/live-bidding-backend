@@ -4,10 +4,7 @@ import {
   joinAuction,
   leaveAuction,
 } from "./handlers/auctionHandler.js";
-interface RawDataState {
-  type: string;
-  payload: any;
-}
+import type { RawDataState } from "./types/types.js";
 
 export class EventRouter {
   async route(
@@ -16,7 +13,7 @@ export class EventRouter {
     data: RawDataState,
   ): Promise<void> {
     switch (data.type) {
-      case "user_connected":
+      case "get_live_auction_feed":
         getAllLiveAuctions(userId, ws);
         break;
 
