@@ -79,6 +79,7 @@ export interface ApiRes<T> {
 }
 
 export interface AuctionBid {
+  id: string;
   userId: string;
   amount: number;
   timestamp: number;
@@ -102,6 +103,8 @@ export interface AuctionState {
   participants: Map<string, AuctionParticipant>;
   viewerCount: number;
   bids: AuctionBid[];
+  startingPrice: number;
+  nextBidAmount: number;
   currentHighestBid: AuctionBid | null;
   startTime: number;
   endTime: number;
@@ -117,6 +120,8 @@ export interface AuctionStateSerialize {
   currentHighestBid: AuctionBid | null;
   startTime: number;
   endTime: number;
+  startingPrice: number;
+  nextBidAmount: number;
   remainingTime: number;
   status: "pending" | "active" | "ended";
   participants: {

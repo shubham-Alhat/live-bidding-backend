@@ -13,6 +13,10 @@ function onSocketError(err: Error) {
   console.log(err);
 }
 
+function heartBeat(this: WebSocket) {
+  this.isAlive = true;
+}
+
 export class WebSocketManager {
   private wss: WebSocketServer;
   private router: EventRouter;
@@ -22,7 +26,18 @@ export class WebSocketManager {
     this.handleUpgradeConnection(server);
     this.connectToWsServer();
     this.router = new EventRouter();
+    this.startHeartBeat();
   }
+
+  private startHeartBeat = () => {
+    setInterval(() => {
+      this.wss.clients.forEach((ws) => {
+        if (ws.isAlive === false) return ws.terminate();
+        ws.isAlive = false;
+        ws.ping();
+      });
+    }, 10000);
+  };
 
   private handleUpgradeConnection = (server: http.Server) => {
     server.on("upgrade", (req, socket, head) => {
@@ -78,6 +93,10 @@ export class WebSocketManager {
       ) => {
         console.log(`🟢 New connection ${decodedToken.id}`);
         connectionManager.addNewConnection(decodedToken.id, ws);
+
+        // isAlive = true
+        ws.isAlive = true;
+        ws.on("pong", heartBeat);
 
         ws.on("close", () => {
           console.log("onclose event fires 🔥");

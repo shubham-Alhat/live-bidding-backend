@@ -103,7 +103,7 @@ export const placeNewBid = (
     return;
   }
 
-  if (auctionState.currentHighestBid) {
+  if (auctionState.currentHighestBid?.amount) {
     // check if highest bid than prev
     if (bidAmount < auctionState.currentHighestBid.amount) {
       ws.send(
@@ -119,6 +119,7 @@ export const placeNewBid = (
 
   // save current highest bid
   auctionState.currentHighestBid = {
+    id: crypto.randomUUID(),
     amount: bidAmount,
     timestamp: timestamp,
     userId: userId,
@@ -126,12 +127,16 @@ export const placeNewBid = (
   };
 
   // add to bids array
-  auctionState.bids.push({
+  auctionState.bids.unshift({
+    id: crypto.randomUUID(),
     amount: bidAmount,
     timestamp: timestamp,
     userId: userId,
     userName: username,
   });
+
+  // update nextBidAmount
+  auctionState.nextBidAmount = auctionState.currentHighestBid.amount + 1;
 
   // create a rawData
   const rawData = {
@@ -141,6 +146,7 @@ export const placeNewBid = (
       username: username,
       bidAmount: bidAmount,
       auctionId: auctionId,
+      auctionState: serializeAuctionState(auctionState),
     },
   };
 

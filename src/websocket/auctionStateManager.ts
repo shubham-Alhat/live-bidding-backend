@@ -1,5 +1,5 @@
 import WebSocket from "ws";
-import { initAuctionState } from "./handlers/helper.js";
+import { initAuctionState, serializeAuctionState } from "./handlers/helper.js";
 import type { Auction, AuctionState } from "./types/types.js";
 import { prisma } from "../db/prisma.js";
 
@@ -43,6 +43,7 @@ export class AuctionManager {
         auctionId: auctionId,
         winner: auctionState.currentHighestBid ?? null,
         endTime: auctionState.endTime,
+        auctionState: serializeAuctionState(auctionState),
       },
     };
 

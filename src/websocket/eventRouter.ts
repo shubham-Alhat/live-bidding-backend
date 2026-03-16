@@ -3,6 +3,7 @@ import {
   getAllLiveAuctions,
   joinAuction,
   leaveAuction,
+  placeNewBid,
 } from "./handlers/auctionHandler.js";
 import type { RawDataState } from "./types/types.js";
 
@@ -23,6 +24,16 @@ export class EventRouter {
 
       case "leave_auction":
         leaveAuction(userId, data.payload.username, data.payload.auctionId);
+        break;
+      case "new_bid":
+        placeNewBid(
+          userId,
+          data.payload.username,
+          data.payload.bidAmount,
+          data.payload.timestamp,
+          data.payload.auctionId,
+          ws,
+        );
         break;
 
       default:
