@@ -8,7 +8,7 @@ class ConnectionManager {
   addNewConnection = (userId: string, ws: WebSocket) => {
     if (this.activeConnections.has(userId)) {
       const existingWs = this.activeConnections.get(userId)!;
-      existingWs.close();
+      existingWs.terminate();
     }
 
     this.activeConnections.set(userId, ws);

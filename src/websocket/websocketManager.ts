@@ -13,10 +13,6 @@ function onSocketError(err: Error) {
   console.log(err);
 }
 
-function heartBeat(this: WebSocket) {
-  this.isAlive = true;
-}
-
 export class WebSocketManager {
   private wss: WebSocketServer;
   private router: EventRouter;
@@ -94,9 +90,10 @@ export class WebSocketManager {
         console.log(`🟢 New connection ${decodedToken.id}`);
         connectionManager.addNewConnection(decodedToken.id, ws);
 
-        // isAlive = true
         ws.isAlive = true;
-        ws.on("pong", heartBeat);
+        ws.on("pong", () => {
+          ws.isAlive = true;
+        });
 
         ws.on("close", () => {
           console.log("onclose event fires 🔥");
