@@ -90,6 +90,7 @@ export class WebSocketManager {
         console.log(`🟢 New connection ${decodedToken.id}`);
         connectionManager.addNewConnection(decodedToken.id, ws);
 
+        // when first get connected. make it true
         ws.isAlive = true;
         ws.on("pong", () => {
           ws.isAlive = true;

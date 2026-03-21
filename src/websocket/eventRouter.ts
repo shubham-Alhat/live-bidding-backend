@@ -4,6 +4,7 @@ import {
   joinAuction,
   leaveAuction,
   placeNewBid,
+  rejoinAuction,
 } from "./handlers/auctionHandler.js";
 import type { RawDataState } from "./types/types.js";
 
@@ -20,6 +21,14 @@ export class EventRouter {
 
       case "user_joined_auction_room":
         joinAuction(userId, data.payload.username, data.payload.auctionId, ws);
+        break;
+      case "rejoin_auction":
+        rejoinAuction(
+          data.payload.auctionId,
+          userId,
+          data.payload.username,
+          ws,
+        );
         break;
 
       case "leave_auction":

@@ -170,3 +170,40 @@ export const getAllLiveAuctions = (userId: string, ws: WebSocket) => {
 
   ws.send(JSON.stringify(rawData));
 };
+
+export const rejoinAuction = (
+  auctionId: string,
+  userId: string,
+  username: string,
+  ws: WebSocket,
+) => {
+  const auctionState = auctionRegistry.get(auctionId);
+
+  if (!auctionState) {
+    console.log("auction not found...");
+    return;
+  }
+
+  // add this new ws in this state
+
+  auctionState.participants.set(userId, {
+    userId: userId,
+    username: username,
+    ws: ws,
+    joinedAt: Date.now(),
+  });
+
+  // create rawData
+  const rawData = {
+    type: "rejoin_auction_state",
+    payload: {
+      userId: userId,
+      username: username,
+      joinedAt: Date.now(),
+      auctionState: serializeAuctionState(auctionState),
+    },
+  };
+
+  // send to client
+  ws.send(JSON.stringify(rawData));
+};
