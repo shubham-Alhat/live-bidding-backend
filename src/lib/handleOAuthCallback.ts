@@ -52,8 +52,6 @@ export const handleOAuthCallback = async (req: Request, res: Response) => {
       },
     });
 
-    let isNewUser = false;
-
     if (!user) {
       // Create new user
       user = await prisma.user.create({
@@ -66,19 +64,13 @@ export const handleOAuthCallback = async (req: Request, res: Response) => {
           password: true,
         },
       });
-
-      isNewUser = true;
     }
 
     const token = generateAccessToken(user.id, user.email);
 
-    const redirectUrl = isNewUser
-      ? `${process.env.FRONTEND_URL}/home?newUser=true`
-      : `${process.env.FRONTEND_URL}/home`;
-
-    return res
-      .cookie("accessToken", token, COOKIE_OPTIONS)
-      .redirect(redirectUrl);
+    return res.redirect(
+      `${process.env.FRONTEND_URL}/auth/callback?token=${token}`,
+    );
   } catch (error) {
     console.error("OAuth callback error:", error);
     return res.redirect(`${process.env.FRONTEND_URL}/login?error=server_error`);
