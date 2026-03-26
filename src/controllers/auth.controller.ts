@@ -67,9 +67,6 @@ export const loginUser = async (req: Request, res: Response) => {
         httpOnly: true,
         secure: true,
         sameSite: "lax",
-        domain:
-          process.env.FRONTEND_URL ||
-          "https://live-bidding-frontend-kwil.vercel.app",
         maxAge: 24 * 60 * 60 * 1000,
         path: "/",
       })
