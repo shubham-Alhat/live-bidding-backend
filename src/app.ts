@@ -8,7 +8,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import passport from "passport";
-import "../src/passport/googleStrategy.js";
+import "./passport/googleStrategy.js";
 import { WebSocketManager } from "./websocket/websocketManager.js";
 import { connectionManager } from "./websocket/connectionManager.js";
 
