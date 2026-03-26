@@ -20,6 +20,8 @@ export const loadAllLiveAuctions = async () => {
         participants: new Map(),
         viewerCount: 0,
         bids: [],
+        startingPrice: auction.startingPrice.toNumber(),
+        nextBidAmount: auction.startingPrice.toNumber() + 1,
         currentHighestBid: null,
         startTime: startTimeMs / 1000,
         endTime: endTimeMs / 1000,
