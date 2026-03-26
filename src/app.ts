@@ -40,4 +40,6 @@ app.use("/api/v1/product", productRouter);
 app.use("/api/v1/auction", auctionRouter);
 app.use("/api/v1/bid", bidRouter);
 
+app.get("/health", (req, res) => res.json({ status: "ok" }));
+
 export default server;
