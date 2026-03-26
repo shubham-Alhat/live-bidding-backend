@@ -79,7 +79,9 @@ export const loginUser = async (req: Request, res: Response) => {
       });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Error in login", data: null });
+    return res
+      .status(500)
+      .json({ message: "Error in login", error: error, data: null });
   }
 };
 
