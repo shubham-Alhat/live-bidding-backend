@@ -1,6 +1,8 @@
 import { prisma } from "../../db/prisma.js";
 import { auctionRegistry } from "../auctionStateManager.js";
 
+// when server restarts, load all live auctions in server
+
 // export const loadAllLiveAuctions = async () => {
 //   try {
 //     const auctions = await prisma.auction.findMany({
