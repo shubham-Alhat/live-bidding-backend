@@ -103,6 +103,7 @@ export interface AuctionState {
   participants: Map<string, AuctionParticipant>;
   viewerCount: number;
   bids: AuctionBid[];
+  isBidProcessing: boolean;
   startingPrice: number;
   nextBidAmount: number;
   currentHighestBid: AuctionBid | null;

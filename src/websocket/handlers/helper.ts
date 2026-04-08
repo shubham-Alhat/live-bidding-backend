@@ -18,6 +18,7 @@ export const initAuctionState = (auction: Auction) => {
       participants: new Map(),
       viewerCount: 0,
       bids: [],
+      isBidProcessing: false,
       nextBidAmount: auction.startingPrice + 1,
       startingPrice: auction.startingPrice,
       currentHighestBid: null,

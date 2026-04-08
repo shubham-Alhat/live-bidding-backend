@@ -103,6 +103,25 @@ export const placeNewBid = (
     return;
   }
 
+  if (auctionState.isBidProcessing) {
+    ws.send(
+      JSON.stringify({
+        type: "bid_rejected",
+        payload: {
+          auctionId: auctionId,
+          userId: userId,
+          username: username,
+          message: "Another bid is being processed. Try again.",
+        },
+      }),
+    );
+
+    console.log(" bid is processing..");
+    return;
+  }
+
+  auctionState.isBidProcessing = true;
+
   if (auctionState.currentHighestBid?.amount) {
     // check if highest bid than prev
     if (bidAmount < auctionState.currentHighestBid.amount) {
@@ -156,6 +175,8 @@ export const placeNewBid = (
       participant.ws.send(JSON.stringify(rawData));
     }
   });
+
+  auctionState.isBidProcessing = false;
 };
 
 export const getAllLiveAuctions = (userId: string, ws: WebSocket) => {
