@@ -23,7 +23,7 @@ const authMiddleware = async (
       return res.status(401).json({ message: "No token found", data: null });
     }
 
-    const secretKey: any = process.env.JWT_SECRET;
+    const secretKey: any = process.env.ACCESS_TOKEN_SECRET;
 
     if (!secretKey) {
       console.error("JWT_SECRET is not defined");
@@ -55,10 +55,10 @@ const authMiddleware = async (
   } catch (error) {
     console.error("Auth middleware error:", error);
 
-    if (error instanceof jwt.JsonWebTokenError) {
+    if (error instanceof jwt.TokenExpiredError) {
       return res.status(401).json({ message: "Invalid token", data: null });
     }
-    if (error instanceof jwt.TokenExpiredError) {
+    if (error instanceof jwt.JsonWebTokenError) {
       return res.status(401).json({ message: "Token expired", data: null });
     }
 
