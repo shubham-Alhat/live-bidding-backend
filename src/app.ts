@@ -11,7 +11,6 @@ import passport from "passport";
 import "./passport/googleStrategy.js";
 
 import { WebSocketManager } from "./websocket/websocketManager.js";
-import { connectionManager } from "./websocket/connectionManager.js";
 
 dotenv.config();
 
