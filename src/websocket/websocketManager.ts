@@ -49,7 +49,7 @@ export class WebSocketManager {
         }
 
         // check token validy
-        const secretKey: any = process.env.JWT_SECRET;
+        const secretKey: any = process.env.ACCESS_TOKEN_SECRET;
 
         const decodedToken = jwt.verify(
           token as string,
@@ -97,7 +97,7 @@ export class WebSocketManager {
         });
 
         ws.on("close", () => {
-          console.log("onclose event fires 🔥");
+          console.log("onclose event fires..");
           if (connectionManager.getConnection(decodedToken.id) === ws) {
             // remove only if matches the socket
             // if dont have condition, it will delete user's current socket conn
