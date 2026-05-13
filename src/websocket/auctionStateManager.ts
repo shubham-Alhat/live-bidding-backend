@@ -2,6 +2,7 @@ import WebSocket from "ws";
 import { initAuctionState, serializeAuctionState } from "./handlers/helper.js";
 import type { Auction, AuctionState } from "./types/types.js";
 import { prisma } from "../db/prisma.js";
+import redis from "../redis/redis.js";
 
 export const auctionRegistry: Map<string, AuctionState> = new Map();
 export const auctionInstances: Map<string, AuctionManager> = new Map();
@@ -13,6 +14,26 @@ export class AuctionManager {
     const remainingTime = initAuctionState(auction);
     this.startAuctionTimer(auction.id, remainingTime);
   }
+
+  initAuctionInRedis = async (auction: Auction) => {
+    // timer configuration
+    const startTimeMs = new Date(auction.startTime).getTime();
+    const endTimeMs = startTimeMs + auction.auctionDuration * 1000;
+    // remaining seconds
+    const remainingTime = Math.floor((endTimeMs - Date.now()) / 1000);
+    // hash - auction state
+    await redis.hset(`auction:${auction.id}:state`, {
+      auctionId: auction.id,
+      status: "LIVE",
+      startingPrice: auction.startingPrice,
+      startTime: startTimeMs / 1000,
+      endTime: endTimeMs / 1000,
+      remainingTime: remainingTime,
+    });
+
+    // string - auction viewerCount
+    await redis.set(`auction:${auction.id}:views`, 0);
+  };
 
   startAuctionTimer = (auctionId: string, remainingTime: number) => {
     console.log("timer started...");
