@@ -1,6 +1,6 @@
 import type { WebSocket } from "ws";
 
-// this is actually maintain/handle the activeConnections with userId -> ws
+// this is actually track / handle the activeConnections with userId -> ws
 
 class ConnectionManager {
   private activeConnections: Map<string, WebSocket> = new Map();
