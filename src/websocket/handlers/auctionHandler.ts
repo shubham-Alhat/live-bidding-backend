@@ -54,4 +54,6 @@ export const joinAuctionRoom = async (
       joinedAt: Date.now(),
     },
   };
+
+  auctionRoomManager.joinAuctionRoom();
 };
