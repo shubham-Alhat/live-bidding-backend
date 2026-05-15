@@ -2,6 +2,7 @@ import type WebSocket from "ws";
 import {
   getLiveAuctionsViewerCounts,
   joinAuctionRoom,
+  leaveAuction,
 } from "./handlers/auctionHandler.js";
 import type { RawDataState } from "./types/types.js";
 
@@ -33,9 +34,14 @@ export class EventRouter {
       //   );
       //   break;
 
-      // case "leave_auction":
-      //   leaveAuction(userId, data.payload.username, data.payload.auctionId);
-      //   break;
+      case "leave_auction":
+        await leaveAuction(
+          userId,
+          data.payload.username,
+          data.payload.auctionId,
+          ws,
+        );
+        break;
       // case "new_bid":
       //   placeNewBid(
       //     userId,

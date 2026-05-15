@@ -6,6 +6,8 @@ import { WebSocketServer, WebSocket } from "ws";
 import dotenv from "dotenv";
 import { EventRouter } from "./eventRouter.js";
 import { connectionManager } from "./connectionManager.js";
+import { auctionRoomManager } from "./auctionRoomManager.js";
+import redis from "./redis/redis.js";
 
 dotenv.config();
 
@@ -96,13 +98,26 @@ export class WebSocketManager {
           ws.isAlive = true;
         });
 
-        ws.on("close", () => {
+        ws.on("close", async () => {
           console.log("onclose event fires..");
           if (connectionManager.getConnection(decodedToken.id) === ws) {
             // remove only if matches the socket
             // if dont have condition, it will delete user's current socket conn
             connectionManager.removeConnection(decodedToken.id);
             console.log(`🔴 User disconnected ${decodedToken.id}`);
+          }
+
+          if (ws.auctionId) {
+            auctionRoomManager.leaveAuctionRoom(ws.auctionId, ws);
+            console.log("remove user from auction room");
+          }
+
+          if (ws.auctionId) {
+            await redis.zrem(
+              `auction:${ws.auctionId}:bidders`,
+              decodedToken.id,
+            );
+            console.log("remove user from bidders room");
           }
         });
 

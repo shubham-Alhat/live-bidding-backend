@@ -34,6 +34,12 @@ export const joinAuctionRoom = async (
   auctionId: string,
   ws: WebSocket,
 ) => {
+  // attach the auctionId to ws for onclose event
+  ws.auctionId = auctionId;
+
+  // update in auctionRoom
+  auctionRoomManager.joinAuctionRoom(auctionId, ws);
+
   const pipeline = redis.pipeline();
 
   // sorted sets for tracking bidders
@@ -55,5 +61,37 @@ export const joinAuctionRoom = async (
     },
   };
 
-  auctionRoomManager.joinAuctionRoom();
+  auctionRoomManager.broadcastInAuction(auctionId, rawData);
+};
+
+export const leaveAuction = async (
+  userId: string,
+  username: string,
+  auctionId: string,
+  ws: WebSocket,
+) => {
+  ws.auctionId = undefined;
+
+  // update auction room
+  auctionRoomManager.leaveAuctionRoom(auctionId, ws);
+
+  const pipeline = redis.pipeline();
+
+  pipeline.zrem(`auction:${auctionId}:bidders`, userId);
+  pipeline.del(`user:${userId}:username`);
+
+  await pipeline.exec();
+
+  const viewerCount = await redis.zcard(`auction:${auctionId}:bidders`);
+
+  const rawData = {
+    type: "user_leave_auction",
+    payload: {
+      userId: userId,
+      username: username,
+      viewerCount: viewerCount,
+    },
+  };
+
+  auctionRoomManager.broadcastInAuction(auctionId, rawData);
 };
