@@ -37,3 +37,38 @@ export const initAuctionInRedis = async (auction: Auction) => {
 
   await pipeline.exec();
 };
+
+export const getParticipantsList = async (auctionId: string) => {
+  const flat = (await redis.zrevrange(
+    `auction:${auctionId}:bidders`,
+    0,
+    -1,
+    "WITHSCORES",
+  )) as string[];
+
+  // flat array into pairs [{ userId, joinedAt }]
+  const entries: { userId: string; joinedAt: number }[] = [];
+  for (let i = 0; i < flat.length; i += 2) {
+    const userId = flat[i];
+    const score = flat[i + 1];
+
+    if (!userId || !score) continue;
+
+    entries.push({
+      userId,
+      joinedAt: Number(score),
+    });
+  }
+
+  if (entries.length === 0) return [];
+
+  //  fetch all usernames
+  const userKeys = entries.map((e) => `user:${e.userId}:username`);
+  const usernames = await redis.mget(...userKeys);
+
+  return entries.map((entry, i) => ({
+    userId: entry.userId,
+    username: usernames[i] ?? "Unknown",
+    joinedAt: entry.joinedAt,
+  }));
+};

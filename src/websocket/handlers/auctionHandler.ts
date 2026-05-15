@@ -1,6 +1,7 @@
 import WebSocket from "ws";
 import redis from "../redis/redis.js";
 import { auctionRoomManager } from "../auctionRoomManager.js";
+import { getParticipantsList } from "./helper.js";
 
 export const getLiveAuctionsViewerCounts = async (
   userId: string,
@@ -49,7 +50,10 @@ export const joinAuctionRoom = async (
 
   await pipeline.exec();
 
-  const viewerCount = await redis.zcard(`auction:${auctionId}:bidders`);
+  const [viewerCount, participants] = await Promise.all([
+    redis.zcard(`auction:${auctionId}:bidders`),
+    getParticipantsList(auctionId),
+  ]);
 
   const rawData = {
     type: "new_user_joined",
@@ -57,7 +61,7 @@ export const joinAuctionRoom = async (
       userId: userId,
       viewerCount: viewerCount,
       username: username,
-      joinedAt: Date.now(),
+      participants: participants,
     },
   };
 
@@ -82,7 +86,10 @@ export const leaveAuction = async (
 
   await pipeline.exec();
 
-  const viewerCount = await redis.zcard(`auction:${auctionId}:bidders`);
+  const [viewerCount, participants] = await Promise.all([
+    redis.zcard(`auction:${auctionId}:bidders`),
+    getParticipantsList(auctionId),
+  ]);
 
   const rawData = {
     type: "user_leave_auction",
@@ -90,6 +97,7 @@ export const leaveAuction = async (
       userId: userId,
       username: username,
       viewerCount: viewerCount,
+      participants: participants,
     },
   };
 
