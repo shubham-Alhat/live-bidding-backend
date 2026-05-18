@@ -55,6 +55,8 @@ export const joinAuctionRoom = async (
     getParticipantsList(auctionId),
   ]);
 
+  // also need to send bids if there
+
   const rawData = {
     type: "new_user_joined",
     payload: {
