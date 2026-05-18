@@ -3,6 +3,7 @@ import {
   getLiveAuctionsViewerCounts,
   joinAuctionRoom,
   leaveAuction,
+  placeNewBid,
 } from "./handlers/auctionHandler.js";
 import type { RawDataState } from "./types/types.js";
 
@@ -14,12 +15,12 @@ export class EventRouter {
   ): Promise<void> {
     switch (data.type) {
       case "get_live_auction_feed":
-        await getLiveAuctionsViewerCounts(userId, ws);
+        await getLiveAuctionsViewerCounts(data.payload.userId ?? userId, ws);
         break;
 
       case "user_joined_auction_room":
         await joinAuctionRoom(
-          userId,
+          data.payload.userId ?? userId,
           data.payload.username,
           data.payload.auctionId,
           ws,
@@ -42,16 +43,15 @@ export class EventRouter {
           ws,
         );
         break;
-      // case "new_bid":
-      //   placeNewBid(
-      //     userId,
-      //     data.payload.username,
-      //     data.payload.bidAmount,
-      //     data.payload.timestamp,
-      //     data.payload.auctionId,
-      //     ws,
-      //   );
-      //   break;
+      case "new_bid":
+        await placeNewBid(
+          userId,
+          data.payload.username,
+          data.payload.bidAmount,
+          data.payload.auctionId,
+          ws,
+        );
+        break;
 
       default:
         console.log(`Unknown event type: ${data.type}`);

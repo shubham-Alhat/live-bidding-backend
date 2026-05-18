@@ -82,6 +82,25 @@ export interface AuctionBid {
   userName: string;
 }
 
+export type BidFailure =
+  | { success: false; reason: "AUCTION_NOT_FOUND" }
+  | { success: false; reason: "AUCTION_ENDED" }
+  | {
+      success: false;
+      reason: "BID_TOO_LOW";
+      currentHighestBid: number;
+      nextMinBid: number;
+    };
+
+type BidSuccess = {
+  success: true;
+  bidAmount: number;
+  nextMinBid: number;
+  bidCount: number;
+};
+
+export type BidResult = BidSuccess | BidFailure;
+
 export interface RawDataState {
   type: string;
   payload: any;

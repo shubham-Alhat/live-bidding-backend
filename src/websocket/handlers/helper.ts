@@ -1,4 +1,4 @@
-import type { Auction } from "../types/types.js";
+import type { Auction, BidResult } from "../types/types.js";
 import redis from "../redis/redis.js";
 
 export const initAuctionInRedis = async (auction: Auction) => {
@@ -71,4 +71,37 @@ export const getParticipantsList = async (auctionId: string) => {
     username: usernames[i] ?? "Unknown",
     joinedAt: entry.joinedAt,
   }));
+};
+
+export const parseLuaResult = (raw: unknown): BidResult => {
+  const res = raw as (string | number)[];
+
+  if (res[0] === 0 || res[0] === "0") {
+    const reason = res[1] as string;
+
+    if (reason === "AUCTION_NOT_FOUND") {
+      return { success: false, reason: "AUCTION_NOT_FOUND" };
+    }
+
+    if (reason === "AUCTION_ENDED") {
+      return { success: false, reason: "AUCTION_ENDED" };
+    }
+
+    if (reason === "BID_TOO_LOW") {
+      return {
+        success: false,
+        reason: "BID_TOO_LOW",
+        currentHighestBid: Number(res[2]),
+        nextMinBid: Number(res[3]),
+      };
+    }
+  }
+
+  // success
+  return {
+    success: true,
+    bidAmount: Number(res[1]),
+    nextMinBid: Number(res[2]),
+    bidCount: Number(res[3]),
+  };
 };
