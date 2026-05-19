@@ -13,7 +13,7 @@ export const initAuctionInRedis = async (auction: Auction) => {
   // hash
   pipeline.hset(`auction:${auction.id}:state`, {
     auctionId: auction.id,
-    status: "LIVE",
+    status: "active",
     startingPrice: auction.startingPrice,
     startTime: startTimeMs / 1000,
     endTime: endTimeMs / 1000,

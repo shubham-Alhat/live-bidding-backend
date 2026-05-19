@@ -70,8 +70,7 @@ export const joinAuctionRoom = async (
   let currentHighestBidder = null;
   if (topBid && topBid.length > 0) {
     currentHighestBidAmount = Number(topBid[1]);
-    currentHighestBidder =
-      (await redis.get(`user:${topBid[0]}:username`)) ?? "Unknown";
+    currentHighestBidder = await redis.get(`user:${topBid[0]}:username`);
   }
 
   const participants = await getParticipantsList(auctionId);
@@ -81,6 +80,7 @@ export const joinAuctionRoom = async (
     JSON.stringify({
       type: "current_auction_data",
       payload: {
+        auctionId: auctionId,
         bidCount: bidCount,
         currentHighestBidAmount: currentHighestBidAmount,
         currentHighestBidder: currentHighestBidder,
