@@ -15,8 +15,8 @@ export const initAuctionInRedis = async (auction: Auction) => {
     auctionId: auction.id,
     status: "active",
     startingPrice: auction.startingPrice,
-    startTime: startTimeMs / 1000,
-    endTime: endTimeMs / 1000,
+    startTime: startTimeMs,
+    endTime: endTimeMs,
   });
 
   // set for live auctions tracking
