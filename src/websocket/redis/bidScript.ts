@@ -25,16 +25,36 @@ export const bidScript = async (
   const bidId = crypto.randomUUID();
   const serverNow = Date.now();
 
-  const raw = await redis.evalsha(
-    scriptSHA,
-    2,
-    STATE_KEY, // KEYS[1]
-    BIDS_KEY, // KEYS[2]
-    userId, // ARGV[1]
-    bidAmount, // ARGV[2]
-    bidId, // ARGV[3]
-    serverNow, // ARGV[4]
-  );
+  try {
+    const raw = await redis.evalsha(
+      scriptSHA,
+      2,
+      STATE_KEY, // KEYS[1]
+      BIDS_KEY, // KEYS[2]
+      userId, // ARGV[1]
+      bidAmount, // ARGV[2]
+      bidId, // ARGV[3]
+      serverNow, // ARGV[4]
+    );
 
-  return parseLuaResult(raw);
+    return parseLuaResult(raw);
+  } catch (error: any) {
+    if (error.message.includes("NOSCRIPT")) {
+      await loadScript();
+      const raw = await redis.evalsha(
+        scriptSHA,
+        2,
+        STATE_KEY, // KEYS[1]
+        BIDS_KEY, // KEYS[2]
+        userId, // ARGV[1]
+        bidAmount, // ARGV[2]
+        bidId, // ARGV[3]
+        serverNow, // ARGV[4]
+      );
+
+      return parseLuaResult(raw);
+    }
+    console.log(error);
+    throw error;
+  }
 };
