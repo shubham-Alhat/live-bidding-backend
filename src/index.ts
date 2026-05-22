@@ -1,5 +1,7 @@
 import server from "./app.js";
+import { prisma } from "./db/prisma.js";
 import { loadScript } from "./websocket/redis/bidScript.js";
+import redis from "./websocket/redis/redis.js";
 
 const PORT = process.env.PORT || 8000;
 
@@ -15,5 +17,14 @@ const startServer = async () => {
     process.exit(1);
   }
 };
+
+const shutdown = async () => {
+  await redis.quit();
+  await prisma.$disconnect();
+  process.exit(0);
+};
+
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
 
 startServer();
