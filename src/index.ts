@@ -2,6 +2,8 @@ import server from "./app.js";
 import { prisma } from "./db/prisma.js";
 import { loadScript } from "./websocket/redis/bidScript.js";
 import redis from "./websocket/redis/redis.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 const PORT = process.env.PORT || 8000;
 
