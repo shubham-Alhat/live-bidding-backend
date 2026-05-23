@@ -3,7 +3,7 @@ import { workerConnection } from "./connection.js";
 import redis from "../redis/redis.js";
 import { prisma } from "../../db/prisma.js";
 
-export const startBidSyncWorker = () => {
+export const startBidSyncWorker = (): Worker => {
   const bidSyncWorker = new Worker(
     "bid-sync",
     async (job: Job) => {

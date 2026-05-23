@@ -5,7 +5,7 @@ import { auctionRoomManager } from "../auctionRoomManager.js";
 import { prisma } from "../../db/prisma.js";
 import { enqueueBidSync } from "./bidSyncQueue.js";
 
-export const startAuctionWorker = () => {
+export const startAuctionWorker = (): Worker => {
   const auctionWorker = new Worker(
     "auction",
     async (job: Job) => {
@@ -19,8 +19,10 @@ export const startAuctionWorker = () => {
       const topBid = (result[1]?.[1] ?? []) as string[] | [];
       let currentHighestBidAmount = 0;
       let currentHighestBidder = null;
+      let hadBids = false;
 
       if (topBid.length > 0 && topBid[0]) {
+        hadBids = true;
         currentHighestBidAmount = Number(topBid[1]);
         // extract userId from "userId:uuid"
         const actualUserId = topBid[0].split(":")[0];
@@ -32,6 +34,7 @@ export const startAuctionWorker = () => {
         payload: {
           currentHighestBidAmount: currentHighestBidAmount,
           currentHighestBidder: currentHighestBidder,
+          hadBids,
         },
       };
 

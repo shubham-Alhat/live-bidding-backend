@@ -34,11 +34,6 @@ export const initAuctionInRedis = async (auction: Auction) => {
     auction.auctionDuration + 7200,
   );
 
-  // pipeline.expire(
-  //   `auction:${auction.id}:viewerCount`,
-  //   auction.auctionDuration + 7200,
-  // );
-
   await pipeline.exec();
 };
 
