@@ -1,12 +1,16 @@
 import type { Auction, BidResult } from "../types/types.js";
 import redis from "../redis/redis.js";
+import { scheduleAuctionEnd } from "../workers/auctionQueue.js";
 
 export const initAuctionInRedis = async (auction: Auction) => {
   // timer
   const startTimeMs = new Date(auction.startTime).getTime();
   const endTimeMs = startTimeMs + auction.auctionDuration * 1000;
   // remaining seconds
-  // const remainingTime = Math.floor((endTimeMs - Date.now()) / 1000);
+  const durationMs = Math.floor(endTimeMs - Date.now());
+
+  // start server timer - bullmq delay jobs
+  await scheduleAuctionEnd(auction.id, durationMs);
 
   const pipeline = redis.pipeline();
 
