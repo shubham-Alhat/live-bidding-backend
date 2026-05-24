@@ -16,7 +16,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon --watch src --ext ts --exec tsx src/index.ts",
-    "build": "prisma generate && tsc",
+    "build": "prisma generate && tsc && cp src/websocket/redis/bid.lua dist/websocket/redis/bid.lua",
     "start": "node dist/index.js"
   },
   "devDependencies": {
