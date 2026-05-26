@@ -69,6 +69,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
     });
 
     if (!existingUser) {
+      console.log("user not found usinf refresh token.");
       return res
         .status(401)
         .json({ message: "user not found in refresh token", data: null });
@@ -76,6 +77,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
 
     // check/match the incomingRefreshToken sent by user with refreshToken which is in db.
     if (existingUser.refreshToken !== incomingRefreshToken) {
+      console.log("DB token not matched with incoming refresh token");
       return res
         .status(401)
         .json({ message: "refresh token expired or modified", data: null });
