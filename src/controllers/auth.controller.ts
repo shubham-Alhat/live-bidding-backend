@@ -43,6 +43,8 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
     const incomingRefreshToken =
       req.cookies.refreshToken || req.body.refreshToken;
 
+    console.log("incomingRefreshToken:", incomingRefreshToken);
+
     if (!incomingRefreshToken) {
       return res
         .status(401)
