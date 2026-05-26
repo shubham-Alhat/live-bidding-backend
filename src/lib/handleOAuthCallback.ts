@@ -46,6 +46,16 @@ export const handleOAuthCallback = async (req: Request, res: Response) => {
     const accessToken = generateAccessToken(user.id, user.email);
     const refreshToken = generateRefreshToken(user.id, user.email);
 
+    // store refresh token in db
+    await prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        refreshToken: refreshToken,
+      },
+    });
+
     return res.redirect(
       `${process.env.FRONTEND_URL}/api/auth/callback?accessToken=${accessToken}&refreshToken=${refreshToken}`,
     );
