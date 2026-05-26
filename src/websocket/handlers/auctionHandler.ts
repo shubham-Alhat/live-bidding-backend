@@ -154,7 +154,11 @@ export const placeNewBid = async (
   const STATE_KEY = `auction:${auctionId}:state`;
   const BIDS_KEY = `auction:${auctionId}:bids`;
 
+  console.log("place new bid:", Date.now());
+
   const result = await bidScript(userId, bidAmount, STATE_KEY, BIDS_KEY);
+
+  console.log("bid placed result from redis:", Date.now());
 
   if (!result.success) {
     ws.send(JSON.stringify({ type: result.reason, payload: result }));
