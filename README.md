@@ -65,7 +65,9 @@ Two separate concerns are handled via BullMQ:
 > **Why not store bids in real time - while bids are placing in auction ??**  
 > Writing to the DB on every bid adds unnecessary latency while bidding. Instead, bids are stored in Redis, and once the auction ends, a single background job store all bids to PostgreSQL in bulk — using `createMany` method of prisma.
 
-## Architecture
+---
+
+## Auction Lifecycle
 
 ![BidHub auction architecture](./auction-lifecycle.svg)
 
