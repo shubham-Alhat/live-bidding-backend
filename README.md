@@ -57,10 +57,10 @@ Below is O/P of test which shows that first bid is accepted while second bid (sa
 
 Two separate concerns are handled via BullMQ:
 
-- **Auction timers** use delayed jobs — when an auction is created, a job is scheduled to fire exactly at the end time of auction. this job update the auction status to `ended` in redis store and triggers next job of storing bids to master DB
+- **Auction timers** use delayed jobs — when an auction is created, a job is scheduled to fire exactly at the end time of auction. This job update the auction status to `ended` in redis store and triggers next job of storing bids to master DB
 
 - **Bid persistence** is handled asynchronously by a background worker. Bids are accepted in real-time and stored in Redis. Once an auction ends, the worker kicks in — it takes all bids for that auction, persists them to the primary PostgreSQL database, and after successful insertion, cleans up the stale data from Redis
 
 > [!Note]  
-> Why not store bids in real time - while bids are placing in auction ??  
+> **Why not store bids in real time - while bids are placing in auction ??**  
 > Writing to the DB on every bid adds unnecessary latency while bidding. Instead, bids are stored in Redis, and once the auction ends, a single background job store all bids to PostgreSQL in bulk — using `createMany` method of prisma.
