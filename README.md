@@ -43,7 +43,7 @@ https://github.com/user-attachments/assets/8c65e0b4-b10b-4a20-84f7-1416d591782b
 
 
 
-In above image, user is notified with a message when he and other user placed bid with same amount (i.e $26)
+In above image, user is notified with a message when he and other user placed bid with same amount (i.e $15)
 
 Also, I perform a test which simulates multiple users bidding simultaneously and redis lua script preventing race conditions. you can see whole repo and its test O/P [here](https://github.com/shubham-Alhat/Redis-Data-Structure-and-Lua-Script#redis-lua-script---atomic-bidding-proccess).
 
