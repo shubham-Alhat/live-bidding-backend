@@ -74,3 +74,33 @@ Two separate concerns are handled via BullMQ:
 ## Bidding flow
 
 ![BidHub bidding flow](./bid-flow.svg)
+
+## Latency between redis ⇄ server and client ⇄ server in prod
+
+> [!Note]  
+> **The backend server, Redis server and Postgresql db are deployed in _singapore_ region and client (me) is in _india Pune_**
+
+Now latency between server and redis is almost **2ms**, as both are in same region and redis also executes the lua script. below is logs from render server of bid processing.
+
+```bash
+2026-05-26T07:14:51.664099765Z place new bid: 1779779691663
+
+2026-05-26T07:14:51.665779567Z bid placed result from redis: 1779779691665
+```
+
+Now latency between server and client: here server is in **singapore** and client is in **India Pune** which approximately gave upto **150ms to 200ms**. - _(this latency is actually between placing bid from client side and getting back the result from server validation and redis validation via websocket)_
+
+Below is logs of client placing bid to getting result (bid accepted or rejected) from server.
+
+```bash
+d783b8c4e59e8441.js:5 raw data send -  1779779687766
+7bdcb600d09b496b.js:1 ------  ws data ----------
+7bdcb600d09b496b.js:1 {type: 'new_bid_placed', payload: {…}}
+7bdcb600d09b496b.js:1 new bid placed -  1779779687925
+```
+
+_If we calculate the latency, it will be **159ms**._
+
+We can bring down this latency upto **30ms-50ms** by placing our backend servers and redis server to India Mumbai (AWS) as single miliseconds matters in live bidding systems.
+
+> _Inspired by watching WhatNot — a live shopping and auction platform — I build this project [Bidhub](https://bidhub.in) and implement core features which needed for actual live bidding systems_
