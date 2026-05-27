@@ -1,0 +1,135 @@
+<svg width="680" viewBox="0 0 680 620" xmlns="http://www.w3.org/2000/svg" role="img">
+  <title>BidHub auction architecture</title>
+  <desc>Flow showing how a live auction is created, managed in Redis, and persisted to PostgreSQL via two background workers.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+      .th { font-size: 14px; font-weight: 600; fill: #1a1a1a; }
+      .ts { font-size: 12px; font-weight: 400; fill: #555; }
+      .lane-label { font-size: 11px; font-weight: 500; fill: #999; }
+
+      /* Purple — Seller */
+      .c-purple rect { fill: #EEEDFE; stroke: #534AB7; }
+      .c-purple .th { fill: #3C3489; }
+      .c-purple .ts { fill: #534AB7; }
+
+      /* Teal — Node.js */
+      .c-teal rect { fill: #E1F5EE; stroke: #0F6E56; }
+      .c-teal .th { fill: #085041; }
+      .c-teal .ts { fill: #0F6E56; }
+
+      /* Coral — Workers */
+      .c-coral rect { fill: #FAECE7; stroke: #993C1D; }
+      .c-coral .th { fill: #712B13; }
+      .c-coral .ts { fill: #993C1D; }
+
+      /* Amber — Redis */
+      .c-amber rect { fill: #FAEEDA; stroke: #854F0B; }
+      .c-amber .th { fill: #633806; }
+      .c-amber .ts { fill: #854F0B; }
+
+      /* Blue — Postgres */
+      .c-blue rect { fill: #E6F1FB; stroke: #185FA5; }
+      .c-blue .th { fill: #0C447C; }
+      .c-blue .ts { fill: #185FA5; }
+
+      .arr { stroke: #888; stroke-width: 1; fill: none; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="680" height="620" fill="#ffffff"/>
+
+  <!-- ── Lane dividers ── -->
+  <line x1="50" y1="140" x2="640" y2="140" stroke="#ccc" stroke-width="0.5" stroke-dasharray="4 4"/>
+  <line x1="50" y1="300" x2="640" y2="300" stroke="#ccc" stroke-width="0.5" stroke-dasharray="4 4"/>
+  <line x1="50" y1="460" x2="640" y2="460" stroke="#ccc" stroke-width="0.5" stroke-dasharray="4 4"/>
+
+  <!-- ── Lane labels ── -->
+  <text class="lane-label" x="30" y="95" text-anchor="middle" transform="rotate(-90,30,95)">Client</text>
+  <text class="lane-label" x="30" y="235" text-anchor="middle" transform="rotate(-90,30,235)">App layer</text>
+  <text class="lane-label" x="30" y="390" text-anchor="middle" transform="rotate(-90,30,390)">Cache</text>
+  <text class="lane-label" x="30" y="530" text-anchor="middle" transform="rotate(-90,30,530)">Persistence</text>
+
+  <!-- ══ CLIENT LAYER ══ -->
+  <g class="c-purple">
+    <rect x="60" y="60" width="140" height="56" rx="8" stroke-width="0.5"/>
+    <text class="th" x="130" y="83" text-anchor="middle" dominant-baseline="central">Seller frontend</text>
+    <text class="ts" x="130" y="102" text-anchor="middle" dominant-baseline="central">POST /launch-auction</text>
+  </g>
+
+  <!-- ══ APP LAYER ══ -->
+  <g class="c-teal">
+    <rect x="60" y="162" width="140" height="56" rx="8" stroke-width="0.5"/>
+    <text class="th" x="130" y="184" text-anchor="middle" dominant-baseline="central">Node.js server</text>
+    <text class="ts" x="130" y="203" text-anchor="middle" dominant-baseline="central">Handles launch</text>
+  </g>
+
+  <g class="c-coral">
+    <rect x="350" y="162" width="130" height="56" rx="8" stroke-width="0.5"/>
+    <text class="th" x="415" y="184" text-anchor="middle" dominant-baseline="central">Worker 1</text>
+    <text class="ts" x="415" y="203" text-anchor="middle" dominant-baseline="central">Auction timer ends</text>
+  </g>
+
+  <g class="c-coral">
+    <rect x="500" y="162" width="130" height="56" rx="8" stroke-width="0.5"/>
+    <text class="th" x="565" y="184" text-anchor="middle" dominant-baseline="central">Worker 2</text>
+    <text class="ts" x="565" y="203" text-anchor="middle" dominant-baseline="central">Bid flush</text>
+  </g>
+
+  <!-- ══ CACHE LAYER ══ -->
+  <g class="c-amber">
+    <rect x="270" y="322" width="140" height="56" rx="8" stroke-width="0.5"/>
+    <text class="th" x="340" y="344" text-anchor="middle" dominant-baseline="central">Redis store</text>
+    <text class="ts" x="340" y="363" text-anchor="middle" dominant-baseline="central">Live state + bids</text>
+  </g>
+
+  <!-- ══ PERSISTENCE LAYER ══ -->
+  <g class="c-blue">
+    <rect x="270" y="482" width="140" height="56" rx="8" stroke-width="0.5"/>
+    <text class="th" x="340" y="504" text-anchor="middle" dominant-baseline="central">PostgreSQL</text>
+    <text class="ts" x="340" y="523" text-anchor="middle" dominant-baseline="central">Bids + auction state</text>
+  </g>
+
+  <!-- ══ ARROWS ══ -->
+
+  <!-- 1. Seller → Node.js -->
+  <line x1="130" y1="116" x2="130" y2="160" class="arr" marker-end="url(#arrow)"/>
+  <text class="ts" x="137" y="141">1️⃣ auction launch</text>
+
+  <!-- 2. Node.js → Worker 1 (delay job) -->
+  <path d="M200 190 L348 190" class="arr" marker-end="url(#arrow)"/>
+  <text class="ts" x="248" y="183" text-anchor="middle">2️⃣ delay job</text>
+  <text class="ts" x="270" y="210" text-anchor="middle">Auction timer starts</text>
+
+  <!-- 3. Node.js → Redis (init state) -->
+  <path d="M130 218 L130 270 L268 350" class="arr" marker-end="url(#arrow)"/>
+  <text class="ts" x="160" y="275">3️⃣ init state</text>
+
+  <!-- 4. Worker 1 → Redis (mark ended) -->
+  <path d="M415 218 L415 300 L412 320" class="arr" marker-end="url(#arrow)"/>
+  <text class="ts" x="329" y="278">4️⃣ mark ended</text>
+  <text class="ts" x="330" y="295">in redis and DB</text>
+
+  <!-- 5. Worker 1 triggers Worker 2 -->
+  <path d="M480 190 L500 190" class="arr" marker-end="url(#arrow)"/>
+  <text class="ts" x="520" y="150">5️⃣ sync bids in DB</text>
+
+  <!-- 6. Redis → PostgreSQL (status) -->
+  <path d="M310 378 L310 480" class="arr" marker-end="url(#arrow)"/>
+  <!-- <text class="ts" x="220" y="432" text-anchor="middle">⑥ status = ended</text> -->
+
+  <!-- 7. Worker 2 → Redis (fetch bids) -->
+  <path d="M565 218 L565 310 L412 356" class="arr" marker-end="url(#arrow)"/>
+  <text class="ts" x="520" y="278" text-anchor="middle">6️⃣ fetch all bids</text>
+  <text class="ts" x="520" y="295" text-anchor="middle">from redis</text>
+
+  <!-- 8. Worker 2 → PostgreSQL (bulk insert) -->
+  <path d="M565 218 L565 510 L412 510" class="arr" marker-end="url(#arrow)"/>
+  <text class="ts" x="575" y="450">7️⃣ bulk insert</text>
+  <text class="ts" x="600" y="465">in DB</text>
+
+</svg>
