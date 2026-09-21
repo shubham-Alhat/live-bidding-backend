@@ -91,6 +91,7 @@ export const joinAuctionRoom = async (
         startTime: Number(state.startTime),
         endTime: Number(state.endTime),
         auctionStatus: state.status,
+        serverNow: Date.now(),
       },
     }),
   );
