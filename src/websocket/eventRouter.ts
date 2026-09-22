@@ -23,6 +23,7 @@ export class EventRouter {
           data.payload.userId ?? userId,
           data.payload.username,
           data.payload.auctionId,
+          data.payload.t0,
           ws,
         );
         break;

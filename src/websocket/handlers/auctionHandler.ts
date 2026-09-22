@@ -34,6 +34,7 @@ export const joinAuctionRoom = async (
   userId: string,
   username: string,
   auctionId: string,
+  t0: number,
   ws: WebSocket,
 ) => {
   // attach the auctionId to ws for onclose event
@@ -92,6 +93,7 @@ export const joinAuctionRoom = async (
         endTime: Number(state.endTime),
         auctionStatus: state.status,
         serverNow: Date.now(),
+        t0: t0,
       },
     }),
   );
