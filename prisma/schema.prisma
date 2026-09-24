@@ -10,75 +10,103 @@ datasource db {
 
 
 model User {
-    id String @id @default(cuid())
-    username String
-    email String @unique
-    password String 
-    refreshToken String?
-    products Product[] @relation("products-own-by-User")
-    auctions Auction[] @relation("auctionUserOwns")
-    winningAuctions Auction[] @relation("userWhoWonThisAuction")
-    bids Bid[] @relation("userWhoBid")
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-}
-enum PRODUCTSTATUS {
-    LIVE
-    NOTLIVE
-    ARCHIVE
+  id               String    @id @default(cuid())
+  username         String
+  email            String    @unique
+  password         String
+  refreshToken     String?
+  isVerifiedSeller Boolean   @default(false)
+  products         Product[] @relation("UserOwnsProduct")
+  auctions         Auction[] @relation("UserOwnsAuction")
+  winningAuctions  Auction[] @relation("UserWonAuction")
+  bids             Bid[]     @relation("UserPlacedBid")
+  shows            Show[]    @relation("UserownsShows")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }
 
 model Product {
-    id String @id @default(cuid())
-    name String
-    image String
-    status PRODUCTSTATUS @default(NOTLIVE)
-    ownerId String
-    owner User @relation("products-own-by-User", fields:[ownerId], references:[id])
-    auctions Auction[] @relation("auctionThisProductBelongsTo")              
-    initialPrice Decimal 
-    durationInSeconds Int
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  id           String    @id @default(cuid())
+  name         String
+  description  String
+  image        String
+  initialPrice Decimal
+  ownerId      String
+  owner        User      @relation("UserOwnsProduct", fields: [ownerId], references: [id], onDelete: Restrict)
+  auctions     Auction[] @relation("ProductHasAuction")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  @@index([ownerId])
 }
 
-
 model Bid {
-    id String @id @default(cuid())
-    price Decimal
-    bidderId String
-    bidder User @relation("userWhoBid",fields:[bidderId],references:[id])
-    auctionId String
-    auction Auction @relation("bidsInAuction",fields:[auctionId],references:[id],onDelete: Cascade)
-    winningAuction Auction? @relation("winningBid")
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  id       String   @id @default(cuid())
+  price    Decimal
+  
+  bidderId String
+  bidder   User     @relation("UserPlacedBid", fields: [bidderId], references: [id], onDelete: Restrict)
+
+  auctionId String
+  auction   Auction @relation("AuctionHasBid", fields: [auctionId], references: [id], onDelete: Cascade)
+
+  // reverse side of Auction.winningBid — nullable, this Bid may or may not be a winner
+  winningAuction Auction? @relation("AuctionWinningBid")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([auctionId])
+  @@index([bidderId])
 }
 
 enum STATUS {
-    
-    ACTIVE
-    ENDED
-    
+  SCHEDULED
+  ACTIVE
+  ENDED
 }
-
 
 model Auction {
-    id String @id @default(cuid())
-    ownerId String
-    owner User @relation("auctionUserOwns",fields:[ownerId],references:[id])
-    winnerId String?
-    winner User? @relation("userWhoWonThisAuction",fields:[winnerId], references:[id])
-    winningBidId String? @unique //  Added @unique since one auction = one winning bid
-    winningBid Bid? @relation("winningBid",fields:[winningBidId], references:[id])
-    biddings Bid[] @relation("bidsInAuction")
-    productId String
-    product Product @relation("auctionThisProductBelongsTo", fields:[productId],references:[id],onDelete: Cascade)
-    startTime DateTime
-    auctionDuration Int
-    startingPrice Decimal
-    finalBidPrice Decimal?
-    status STATUS @default(ACTIVE) 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  id              String   @id @default(cuid())
+
+  ownerId         String
+  owner           User     @relation("UserOwnsAuction", fields: [ownerId], references: [id], onDelete: Restrict)
+
+  winnerId        String?
+  winner          User?    @relation("UserWonAuction", fields: [winnerId], references: [id], onDelete: SetNull)
+
+  winningBidId    String?  @unique
+  winningBid      Bid?     @relation("AuctionWinningBid", fields: [winningBidId], references: [id], onDelete: SetNull)
+
+  biddings        Bid[]    @relation("AuctionHasBid")
+
+  productId       String
+  product         Product  @relation("ProductHasAuction", fields: [productId], references: [id], onDelete: Cascade)
+
+  startTime       DateTime
+  auctionDuration Int
+  startingPrice   Decimal
+  finalBidPrice   Decimal?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([productId])
+  @@index([ownerId])
 }
+
+
+model Show {
+  id              String   @id @default(cuid())
+  name            String
+  description     String
+  thumbnail       String
+  ownerId         String
+  owner           User     @relation("UserownsShows", fields: [ownerId], references: [id], onDelete: Cascade)
+  status          STATUS   @default(SCHEDULED)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+}
+
+
+

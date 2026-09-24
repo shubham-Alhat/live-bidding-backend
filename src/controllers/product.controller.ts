@@ -5,7 +5,7 @@ import { initAuctionInRedis } from "../websocket/handlers/helper.js";
 
 export const createNewProduct = async (req: Request, res: Response) => {
   try {
-    const { duration, intialPrice, productName } = req.body;
+    const { intialPrice, productName, productDescription } = req.body;
 
     const user = req.authUser;
 
@@ -31,10 +31,10 @@ export const createNewProduct = async (req: Request, res: Response) => {
     const newProduct = await prisma.product.create({
       data: {
         name: productName,
+        description: productDescription,
         image: cloudinaryResponse.secure_url,
         ownerId: user.id,
         initialPrice: parseFloat(intialPrice),
-        durationInSeconds: parseInt(duration),
       },
     });
 
@@ -77,25 +77,6 @@ export const launchProduct = async (req: Request, res: Response) => {
     if (!isProductExist) {
       return res.status(404).json({ message: "Product not found", data: null });
     }
-
-    // check if it is already lauched or archived
-    if (isProductExist.status === "LIVE") {
-      return res.status(400).json({ message: "Already launched", data: null });
-    }
-
-    const launchedProduct = await prisma.product.update({
-      where: {
-        id: isProductExist.id,
-        name: isProductExist.name,
-      },
-      data: {
-        status: "LIVE",
-      },
-
-      omit: {
-        createdAt: true,
-      },
-    });
 
     // create a auction
     const newAuction = await prisma.auction.create({

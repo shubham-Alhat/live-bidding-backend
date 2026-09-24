@@ -37,11 +37,7 @@ To solve this, I used redis luascript to process bids as atomic operation
 
 When very first bid is processed, redis is locked which denies processing of incoming new bid until current one is completely processed & highest bid amount is updated. After current bid process completed, redis is unlocked & allows to enter new pending bid and if current bid is of same of amount as previous processed one, it throws an error - `bid too low`
 
-
-
 https://github.com/user-attachments/assets/8c65e0b4-b10b-4a20-84f7-1416d591782b
-
-
 
 In above image, user is notified with a message when he and other user placed bid with same amount (i.e $15)
 
