@@ -86,6 +86,8 @@ model Auction {
   auctionDuration Int
   startingPrice   Decimal
   finalBidPrice   Decimal?
+
+  status          STATUS   @default(SCHEDULED)
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

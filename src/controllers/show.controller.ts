@@ -79,3 +79,34 @@ export const createNewShow = async (req: Request, res: Response) => {
       .json({ message: "Error in create new show", data: null });
   }
 };
+
+export const getShowById = async (req: Request, res: Response) => {
+  try {
+    const showId = req.params.id as string;
+
+    if (!showId) {
+      return res
+        .status(400)
+        .json({ message: "id not found in params", data: null });
+    }
+
+    const existingShow = await prisma.show.findUnique({
+      where: {
+        id: showId,
+      },
+    });
+
+    if (!existingShow) {
+      return res.status(404).json({ message: "show not found!", data: null });
+    }
+
+    return res
+      .status(200)
+      .json({ message: "get the show", data: existingShow });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Error in getting show by id", data: null });
+  }
+};
