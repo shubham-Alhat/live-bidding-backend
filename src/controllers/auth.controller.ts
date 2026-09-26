@@ -205,7 +205,8 @@ export const loginUser = async (req: Request, res: Response) => {
         sameSite: "lax",
         maxAge: 60 * 60 * 1000,
         path: "/",
-        domain: ".bidhub.in",
+        domain:
+          process.env.NODE_ENV === "production" ? ".bidhub.in" : undefined,
       })
       .cookie("refreshToken", refreshToken, {
         httpOnly: true,
@@ -213,7 +214,8 @@ export const loginUser = async (req: Request, res: Response) => {
         sameSite: "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
         path: "/",
-        domain: ".bidhub.in",
+        domain:
+          process.env.NODE_ENV === "production" ? ".bidhub.in" : undefined,
       })
       .json({
         message: "User login successfully",
@@ -321,7 +323,8 @@ export const logoutUser = async (req: Request, res: Response) => {
         sameSite: "lax",
         maxAge: 60 * 60 * 1000,
         path: "/",
-        domain: ".bidhub.in",
+        domain:
+          process.env.NODE_ENV === "production" ? ".bidhub.in" : undefined,
       })
       .clearCookie("refreshToken", {
         httpOnly: true,
@@ -329,7 +332,8 @@ export const logoutUser = async (req: Request, res: Response) => {
         sameSite: "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
         path: "/",
-        domain: ".bidhub.in",
+        domain:
+          process.env.NODE_ENV === "production" ? ".bidhub.in" : undefined,
       })
       .json({ message: "User logout successfully", data: null });
   } catch (error) {

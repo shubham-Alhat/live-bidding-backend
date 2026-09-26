@@ -4,6 +4,7 @@ import authRouter from "./routes/auth.route.js";
 import productRouter from "./routes/product.route.js";
 import auctionRouter from "./routes/auction.route.js";
 import bidRouter from "./routes/bid.route.js";
+import showRouter from "./routes/show.route.js";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -39,6 +40,7 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/product", productRouter);
 app.use("/api/v1/auction", auctionRouter);
 app.use("/api/v1/bid", bidRouter);
+app.use("/api/v1/show", showRouter);
 
 app.get("/health", (req, res) => res.json({ status: "ok" }));
 
