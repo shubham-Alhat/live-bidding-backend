@@ -3,205 +3,205 @@ import { uploadOnCloudinary } from "../lib/cloudinary.js";
 import { prisma } from "../db/prisma.js";
 import { initAuctionInRedis } from "../websocket/handlers/helper.js";
 
-export const createNewProduct = async (req: Request, res: Response) => {
-  try {
-    const { intialPrice, productName, productDescription } = req.body;
+// export const createNewProduct = async (req: Request, res: Response) => {
+//   try {
+//     const { intialPrice, productName, productDescription } = req.body;
 
-    const user = req.authUser;
+//     const user = req.authUser;
 
-    if (!user || !user.id) {
-      return res
-        .status(404)
-        .json({ message: "authUser not found", data: null });
-    }
+//     if (!user || !user.id) {
+//       return res
+//         .status(404)
+//         .json({ message: "authUser not found", data: null });
+//     }
 
-    //   get the image url
-    let cloudinaryResponse;
-    if (req.file?.path) {
-      cloudinaryResponse = await uploadOnCloudinary(req.file?.path);
-    }
+//     //   get the image url
+//     let cloudinaryResponse;
+//     if (req.file?.path) {
+//       cloudinaryResponse = await uploadOnCloudinary(req.file?.path);
+//     }
 
-    if (!cloudinaryResponse?.secure_url) {
-      return res
-        .status(500)
-        .json({ message: "secure url not found", data: null });
-    }
+//     if (!cloudinaryResponse?.secure_url) {
+//       return res
+//         .status(500)
+//         .json({ message: "secure url not found", data: null });
+//     }
 
-    //   create new product
-    const newProduct = await prisma.product.create({
-      data: {
-        name: productName,
-        description: productDescription,
-        image: cloudinaryResponse.secure_url,
-        ownerId: user.id,
-        initialPrice: parseFloat(intialPrice),
-      },
-    });
+//     //   create new product
+//     const newProduct = await prisma.product.create({
+//       data: {
+//         name: productName,
+//         description: productDescription,
+//         image: cloudinaryResponse.secure_url,
+//         ownerId: user.id,
+//         initialPrice: parseFloat(intialPrice),
+//       },
+//     });
 
-    if (!newProduct) {
-      return res
-        .status(500)
-        .json({ message: "Cant create new product", data: null });
-    }
+//     if (!newProduct) {
+//       return res
+//         .status(500)
+//         .json({ message: "Cant create new product", data: null });
+//     }
 
-    return res
-      .status(201)
-      .json({ message: "New product created!", data: newProduct });
-  } catch (error) {
-    console.log(error);
-    return res
-      .status(500)
-      .json({ message: "Error in create new product", data: null });
-  }
-};
+//     return res
+//       .status(201)
+//       .json({ message: "New product created!", data: newProduct });
+//   } catch (error) {
+//     console.log(error);
+//     return res
+//       .status(500)
+//       .json({ message: "Error in create new product", data: null });
+//   }
+// };
 
-export const launchProduct = async (req: Request, res: Response) => {
-  try {
-    const productId = req.params.productId as string;
+// export const launchProduct = async (req: Request, res: Response) => {
+//   try {
+//     const productId = req.params.productId as string;
 
-    const user = req.authUser;
+//     const user = req.authUser;
 
-    if (!user) {
-      return res
-        .status(400)
-        .json({ message: "User not found in mid", data: null });
-    }
+//     if (!user) {
+//       return res
+//         .status(400)
+//         .json({ message: "User not found in mid", data: null });
+//     }
 
-    // check if product exist
-    const isProductExist = await prisma.product.findUnique({
-      where: {
-        id: productId,
-      },
-    });
+//     // check if product exist
+//     const isProductExist = await prisma.product.findUnique({
+//       where: {
+//         id: productId,
+//       },
+//     });
 
-    if (!isProductExist) {
-      return res.status(404).json({ message: "Product not found", data: null });
-    }
+//     if (!isProductExist) {
+//       return res.status(404).json({ message: "Product not found", data: null });
+//     }
 
-    // create a auction
-    const newAuction = await prisma.auction.create({
-      data: {
-        ownerId: user.id,
-        productId: launchedProduct.id,
-        auctionDuration: launchedProduct.durationInSeconds,
-        startTime: new Date().toISOString(),
-        startingPrice: launchedProduct.initialPrice,
-      },
-    });
+//     // create a auction
+//     const newAuction = await prisma.auction.create({
+//       data: {
+//         ownerId: user.id,
+//         productId: launchedProduct.id,
+//         auctionDuration: launchedProduct.durationInSeconds,
+//         startTime: new Date().toISOString(),
+//         startingPrice: launchedProduct.initialPrice,
+//       },
+//     });
 
-    // create entry in redis
-    await initAuctionInRedis({
-      ...newAuction,
-      startingPrice: newAuction.startingPrice.toNumber(),
-      finalBidPrice: newAuction.finalBidPrice?.toNumber() ?? null,
-    });
+//     // create entry in redis
+//     await initAuctionInRedis({
+//       ...newAuction,
+//       startingPrice: newAuction.startingPrice.toNumber(),
+//       finalBidPrice: newAuction.finalBidPrice?.toNumber() ?? null,
+//     });
 
-    return res
-      .status(200)
-      .json({ message: "Product launched", data: launchedProduct });
-  } catch (error) {
-    console.log(error);
-    return res
-      .status(500)
-      .json({ message: "Error in launch product", data: null });
-  }
-};
+//     return res
+//       .status(200)
+//       .json({ message: "Product launched", data: launchedProduct });
+//   } catch (error) {
+//     console.log(error);
+//     return res
+//       .status(500)
+//       .json({ message: "Error in launch product", data: null });
+//   }
+// };
 
-export const deleteProduct = async (req: Request, res: Response) => {
-  try {
-    const productId = req.params.productId as string;
+// export const deleteProduct = async (req: Request, res: Response) => {
+//   try {
+//     const productId = req.params.productId as string;
 
-    if (!productId) {
-      return res
-        .status(404)
-        .json({ message: "product id not found", data: null });
-    }
+//     if (!productId) {
+//       return res
+//         .status(404)
+//         .json({ message: "product id not found", data: null });
+//     }
 
-    // check if its exist
-    const isExistingProduct = await prisma.product.findUnique({
-      where: {
-        id: productId,
-      },
-    });
+//     // check if its exist
+//     const isExistingProduct = await prisma.product.findUnique({
+//       where: {
+//         id: productId,
+//       },
+//     });
 
-    if (!isExistingProduct) {
-      return res.status(404).json({ message: "Product not found", data: null });
-    }
+//     if (!isExistingProduct) {
+//       return res.status(404).json({ message: "Product not found", data: null });
+//     }
 
-    // delete the product
-    await prisma.product.delete({
-      where: {
-        id: productId,
-      },
-    });
+//     // delete the product
+//     await prisma.product.delete({
+//       where: {
+//         id: productId,
+//       },
+//     });
 
-    return res
-      .status(200)
-      .json({ message: "Product deleted successfully", data: null });
-  } catch (error) {
-    console.log(error);
-    return res
-      .status(500)
-      .json({ message: "Error in delete product", data: null });
-  }
-};
+//     return res
+//       .status(200)
+//       .json({ message: "Product deleted successfully", data: null });
+//   } catch (error) {
+//     console.log(error);
+//     return res
+//       .status(500)
+//       .json({ message: "Error in delete product", data: null });
+//   }
+// };
 
-export const getAllProducts = async (req: Request, res: Response) => {
-  try {
-    const user = req.authUser;
+// export const getAllProducts = async (req: Request, res: Response) => {
+//   try {
+//     const user = req.authUser;
 
-    if (!user) {
-      return res
-        .status(400)
-        .json({ message: "User not in middleware", data: null });
-    }
+//     if (!user) {
+//       return res
+//         .status(400)
+//         .json({ message: "User not in middleware", data: null });
+//     }
 
-    const allProducts = await prisma.product.findMany({
-      where: {
-        ownerId: user.id,
-      },
-    });
+//     const allProducts = await prisma.product.findMany({
+//       where: {
+//         ownerId: user.id,
+//       },
+//     });
 
-    return res
-      .status(200)
-      .json({ message: "All products owned by user", data: allProducts });
-  } catch (error) {
-    console.log(error);
-    return res
-      .status(500)
-      .json({ message: "Error while getting all products", data: null });
-  }
-};
+//     return res
+//       .status(200)
+//       .json({ message: "All products owned by user", data: allProducts });
+//   } catch (error) {
+//     console.log(error);
+//     return res
+//       .status(500)
+//       .json({ message: "Error while getting all products", data: null });
+//   }
+// };
 
-export const getTheProduct = async (req: Request, res: Response) => {
-  try {
-    const productId = req.params.id as string;
+// export const getTheProduct = async (req: Request, res: Response) => {
+//   try {
+//     const productId = req.params.id as string;
 
-    if (!productId) {
-      return res
-        .status(400)
-        .json({ message: "id not found in params", data: null });
-    }
+//     if (!productId) {
+//       return res
+//         .status(400)
+//         .json({ message: "id not found in params", data: null });
+//     }
 
-    const existingProduct = await prisma.product.findUnique({
-      where: {
-        id: productId,
-      },
-    });
+//     const existingProduct = await prisma.product.findUnique({
+//       where: {
+//         id: productId,
+//       },
+//     });
 
-    if (!existingProduct) {
-      return res
-        .status(404)
-        .json({ message: "product not found!", data: null });
-    }
+//     if (!existingProduct) {
+//       return res
+//         .status(404)
+//         .json({ message: "product not found!", data: null });
+//     }
 
-    return res
-      .status(200)
-      .json({ message: "get the product", data: existingProduct });
-  } catch (error) {
-    console.log(error);
-    return res
-      .status(500)
-      .json({ message: "Error in getting product by id", data: null });
-  }
-};
+//     return res
+//       .status(200)
+//       .json({ message: "get the product", data: existingProduct });
+//   } catch (error) {
+//     console.log(error);
+//     return res
+//       .status(500)
+//       .json({ message: "Error in getting product by id", data: null });
+//   }
+// };
