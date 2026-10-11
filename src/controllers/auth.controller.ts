@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import type { decodedTokenState } from "../middleware/auth.middleware.js";
 
-export const generateAccessToken = (id: string, email: string): string => {
+export const generateAccessToken = (id: string, username: string): string => {
   const secretKey = process.env.ACCESS_TOKEN_SECRET;
 
   if (!secretKey) {
@@ -13,15 +13,16 @@ export const generateAccessToken = (id: string, email: string): string => {
 
   const payload = {
     id,
-    email,
+    username,
   };
 
   return jwt.sign(payload, secretKey, {
     expiresIn: "1h",
+    algorithm: "HS256",
   });
 };
 
-export const generateRefreshToken = (id: string, email: string): string => {
+export const generateRefreshToken = (id: string, username: string): string => {
   const secretKey = process.env.REFRESH_TOKEN_SECRET;
 
   if (!secretKey) {
@@ -30,11 +31,12 @@ export const generateRefreshToken = (id: string, email: string): string => {
 
   const payload = {
     id,
-    email,
+    username,
   };
 
   return jwt.sign(payload, secretKey, {
     expiresIn: "7d",
+    algorithm: "HS256",
   });
 };
 
@@ -69,7 +71,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
     });
 
     if (!existingUser) {
-      console.log("user not found usinf refresh token.");
+      console.log("user not found using refresh token.");
       return res
         .status(401)
         .json({ message: "user not found in refresh token", data: null });
@@ -86,11 +88,11 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
     // generate new tokens
     const accessToken = generateAccessToken(
       existingUser.id,
-      existingUser.email,
+      existingUser.username,
     );
     const refreshToken = generateRefreshToken(
       existingUser.id,
-      existingUser.email,
+      existingUser.username,
     );
 
     // update new refresh token in db
@@ -177,9 +179,9 @@ export const loginUser = async (req: Request, res: Response) => {
     }
 
     // generate tokens
-    const accessToken = generateAccessToken(user.id, user.email);
+    const accessToken = generateAccessToken(user.id, user.username);
 
-    const refreshToken = generateRefreshToken(user.id, user.email);
+    const refreshToken = generateRefreshToken(user.id, user.username);
 
     // store refresh token in db.
     await prisma.user.update({

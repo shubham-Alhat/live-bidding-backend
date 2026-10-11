@@ -6,7 +6,8 @@ dotenv.config();
 
 export type decodedTokenState = {
   id: string;
-  email: string;
+  username: string;
+  isGuest?: true;
 };
 
 const authMiddleware = async (
@@ -36,7 +37,7 @@ const authMiddleware = async (
 
     const user = await prisma.user.findUnique({
       where: {
-        email: decodedToken.email,
+        username: decodedToken.username,
       },
       omit: {
         password: true,
@@ -44,9 +45,10 @@ const authMiddleware = async (
     });
 
     if (!user) {
-      return res
-        .status(404)
-        .json({ message: "User not found in middleware", data: null });
+      return res.status(404).json({
+        message: "User not found in db & No Guest session",
+        data: null,
+      });
     }
 
     req.authUser = user;

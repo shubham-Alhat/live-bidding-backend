@@ -43,8 +43,8 @@ export const handleOAuthCallback = async (req: Request, res: Response) => {
       });
     }
 
-    const accessToken = generateAccessToken(user.id, user.email);
-    const refreshToken = generateRefreshToken(user.id, user.email);
+    const accessToken = generateAccessToken(user.id, user.username);
+    const refreshToken = generateRefreshToken(user.id, user.username);
 
     // store refresh token in db
     await prisma.user.update({

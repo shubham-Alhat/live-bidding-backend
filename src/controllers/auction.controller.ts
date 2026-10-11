@@ -12,7 +12,7 @@ export const getAllLiveAuctions = async (req: Request, res: Response) => {
     }
 
     // get all live auctions except his (user) own auction
-    const allAuctions = await prisma.auction.findMany({
+    const allAuctions = await prisma.show.findMany({
       where: {
         status: "ACTIVE",
         NOT: {
@@ -21,7 +21,6 @@ export const getAllLiveAuctions = async (req: Request, res: Response) => {
       },
       include: {
         owner: true,
-        product: true,
       },
     });
 

@@ -105,6 +105,7 @@ model Show {
   ownerId         String
   owner           User     @relation("UserownsShows", fields: [ownerId], references: [id], onDelete: Cascade)
   status          STATUS   @default(SCHEDULED)
+  scheduledAt     DateTime @db.Timestamptz(3) @default(now())
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
