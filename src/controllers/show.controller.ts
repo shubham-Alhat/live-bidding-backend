@@ -31,7 +31,31 @@ export const getAllShows = async (req: Request, res: Response) => {
 
 export const createNewShow = async (req: Request, res: Response) => {
   try {
-    const { showTitle, showDescription } = req.body;
+    const { showTitle, showDescription, startsAt, tags } = req.body;
+
+    if (!showDescription || !showTitle) {
+      return res
+        .status(404)
+        .json({ message: "Show details not found", data: null });
+    }
+
+    const startsAtDate = new Date(startsAt);
+
+    if (isNaN(startsAtDate.getTime())) {
+      return res.status(400).json({ message: "Invalid date format" });
+    }
+
+    if (startsAtDate.getTime() <= Date.now()) {
+      return res
+        .status(400)
+        .json({ message: "Show must be scheduled in the future" });
+    }
+
+    if (JSON.parse(tags).length === 0) {
+      return res
+        .status(400)
+        .json({ message: "Please provide atleast one tag for show" });
+    }
 
     const user = req.authUser;
 
@@ -53,13 +77,15 @@ export const createNewShow = async (req: Request, res: Response) => {
         .json({ message: "secure url not found", data: null });
     }
 
-    //   create new show
+    // create new show
     const newShow = await prisma.show.create({
       data: {
         name: showTitle,
         description: showDescription,
         thumbnail: cloudinaryResponse.secure_url,
         ownerId: user.id,
+        scheduledAt: startsAtDate,
+        tags: JSON.parse(tags),
       },
     });
 

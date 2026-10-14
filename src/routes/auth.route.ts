@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  getCurrentSeller,
   getCurrentUser,
   loginUser,
   logoutUser,
@@ -17,6 +18,8 @@ router.route("/login").post(loginUser);
 router.route("/signup").post(signupUser);
 
 router.route("/get-user").get(authMiddleware, getCurrentUser);
+
+router.route("/get-seller").get(authMiddleware, getCurrentSeller);
 
 router.route("/logout").post(authMiddleware, logoutUser);
 

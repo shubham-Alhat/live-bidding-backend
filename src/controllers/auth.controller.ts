@@ -297,6 +297,29 @@ export const getCurrentUser = async (req: Request, res: Response) => {
   }
 };
 
+export const getCurrentSeller = async (req: Request, res: Response) => {
+  try {
+    const currentSeller = req.authUser;
+
+    if (!currentSeller) {
+      return res
+        .status(404)
+        .json({ message: "Seller not found!!", data: null });
+    }
+
+    // verify seller using kyc
+
+    return res
+      .status(200)
+      .json({ message: "Current seller found", data: currentSeller });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Error in getting seller", data: null });
+  }
+};
+
 export const logoutUser = async (req: Request, res: Response) => {
   try {
     const currentUser = req.authUser;
