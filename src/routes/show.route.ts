@@ -3,13 +3,13 @@ import authMiddleware from "../middleware/auth.middleware.js";
 import { upload } from "../middleware/multer.middleware.js";
 import {
   createNewShow,
-  getAllShows,
+  getAllShowsOfSeller,
   getShowById,
 } from "../controllers/show.controller.js";
 
 const router = Router();
 
-router.route("/get-all").get(authMiddleware, getAllShows);
+router.route("/get-all").get(authMiddleware, getAllShowsOfSeller);
 
 router
   .route("/create")

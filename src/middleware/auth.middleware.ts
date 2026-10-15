@@ -35,6 +35,13 @@ const authMiddleware = async (
 
     const decodedToken = jwt.verify(token, secretKey) as decodedTokenState;
 
+    if (decodedToken.isGuest && decodedToken.isGuest === true) {
+      return res.status(403).json({
+        message: "Guest are not allowed, Please login",
+        data: null,
+      });
+    }
+
     const user = await prisma.user.findUnique({
       where: {
         username: decodedToken.username,

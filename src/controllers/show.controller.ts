@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { prisma } from "../db/prisma.js";
 import { uploadOnCloudinary } from "../lib/cloudinary.js";
 
-export const getAllShows = async (req: Request, res: Response) => {
+export const getAllShowsOfSeller = async (req: Request, res: Response) => {
   try {
     const user = req.authUser;
 
@@ -74,7 +74,7 @@ export const createNewShow = async (req: Request, res: Response) => {
     if (!cloudinaryResponse?.secure_url) {
       return res
         .status(500)
-        .json({ message: "secure url not found", data: null });
+        .json({ message: "cloudinary secure url not found", data: null });
     }
 
     // create new show
@@ -116,9 +116,22 @@ export const getShowById = async (req: Request, res: Response) => {
         .json({ message: "id not found in params", data: null });
     }
 
+    const user = req.authUser;
+
+    if (!user || !user.id) {
+      return res
+        .status(404)
+        .json({ message: "authUser not found", data: null });
+    }
+
+    //  existence + ownership in ONE query
     const existingShow = await prisma.show.findUnique({
       where: {
         id: showId,
+        ownerId: user.id,
+      },
+      include: {
+        owner: true,
       },
     });
 
@@ -126,9 +139,7 @@ export const getShowById = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "show not found!", data: null });
     }
 
-    return res
-      .status(200)
-      .json({ message: "get the show", data: existingShow });
+    return res.status(200).json({ message: "Your show", data: existingShow });
   } catch (error) {
     console.log(error);
     return res
