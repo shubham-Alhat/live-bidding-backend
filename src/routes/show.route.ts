@@ -5,6 +5,7 @@ import {
   createNewShow,
   getAllShowsOfSeller,
   getShowById,
+  getShowMetaData,
 } from "../controllers/show.controller.js";
 
 const router = Router();
@@ -16,5 +17,8 @@ router
   .post(authMiddleware, upload.single("image"), createNewShow);
 
 router.route("/:id").get(authMiddleware, getShowById);
+
+// public endpoint
+router.route("/public/:id").get(getShowMetaData);
 
 export default router;
