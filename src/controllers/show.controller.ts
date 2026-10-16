@@ -162,21 +162,16 @@ export const getShowMetaData = async (req: Request, res: Response) => {
       where: {
         id: showId,
       },
-      include: {
-        owner: true,
-      },
     });
 
     if (!existingShow) {
       return res.status(404).json({ message: "show not found!", data: null });
     }
 
-    return res
-      .status(200)
-      .json({
-        message: "Show MetaData fecthed successfully",
-        data: existingShow,
-      });
+    return res.status(200).json({
+      message: "Show MetaData fecthed successfully",
+      data: existingShow,
+    });
   } catch (error) {
     console.log(error);
     return res
