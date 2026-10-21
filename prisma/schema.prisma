@@ -30,8 +30,10 @@ model Product {
   name         String
   description  String
   image        String
-  initialPrice Decimal
+  image_public_id String
+  startingPrice Decimal
   ownerId      String
+  buyNowPrice  Decimal
   owner        User      @relation("UserOwnsProduct", fields: [ownerId], references: [id], onDelete: Restrict)
   auctions     Auction[] @relation("ProductHasAuction")
   createdAt    DateTime  @default(now())

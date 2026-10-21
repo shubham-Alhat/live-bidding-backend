@@ -2,206 +2,111 @@ import type { Request, Response } from "express";
 import { uploadOnCloudinary } from "../lib/cloudinary.js";
 import { prisma } from "../db/prisma.js";
 import { initAuctionInRedis } from "../websocket/handlers/helper.js";
+import { v2 as cloudinary } from "cloudinary";
 
-// export const createNewProduct = async (req: Request, res: Response) => {
-//   try {
-//     const { intialPrice, productName, productDescription } = req.body;
+// helper function
+const MIN_PRICE = 1;
+const MAX_PRICE = 10_000_000;
 
-//     const user = req.authUser;
+import fs from "fs/promises";
 
-//     if (!user || !user.id) {
-//       return res
-//         .status(404)
-//         .json({ message: "authUser not found", data: null });
-//     }
+type PriceResult = { ok: true; value: number } | { ok: false; error: string };
 
-//     //   get the image url
-//     let cloudinaryResponse;
-//     if (req.file?.path) {
-//       cloudinaryResponse = await uploadOnCloudinary(req.file?.path);
-//     }
+function parsePrice(raw: unknown, label: string): PriceResult {
+  const str =
+    typeof raw === "number"
+      ? String(raw)
+      : typeof raw === "string"
+        ? raw.trim()
+        : "";
+  if (!str) return { ok: false, error: `${label} is required` };
+  if (!/^[1-9]\d*$/.test(str))
+    return { ok: false, error: `${label} must be a positive whole number` };
 
-//     if (!cloudinaryResponse?.secure_url) {
-//       return res
-//         .status(500)
-//         .json({ message: "secure url not found", data: null });
-//     }
+  const num = Number(str);
+  if (!Number.isSafeInteger(num) || num > MAX_PRICE) {
+    return { ok: false, error: `${label} cannot exceed ${MAX_PRICE}` };
+  }
+  return { ok: true, value: num };
+}
 
-//     //   create new product
-//     const newProduct = await prisma.product.create({
-//       data: {
-//         name: productName,
-//         description: productDescription,
-//         image: cloudinaryResponse.secure_url,
-//         ownerId: user.id,
-//         initialPrice: parseFloat(intialPrice),
-//       },
-//     });
+export const createNewProduct = async (req: Request, res: Response) => {
+  try {
+    const imageFile = req.file;
+    const { name, description, startingPrice, buyNowPrice } = req.body ?? {};
+    const user = req.authUser;
 
-//     if (!newProduct) {
-//       return res
-//         .status(500)
-//         .json({ message: "Cant create new product", data: null });
-//     }
+    if (!user?.id) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+    if (typeof name !== "string" || !name.trim() || name.trim().length > 100) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Name is required (max 100 chars)" });
+    }
+    if (
+      typeof description !== "string" ||
+      !description.trim() ||
+      description.trim().length > 2000
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Description is required (max 2000 chars)",
+      });
+    }
 
-//     return res
-//       .status(201)
-//       .json({ message: "New product created!", data: newProduct });
-//   } catch (error) {
-//     console.log(error);
-//     return res
-//       .status(500)
-//       .json({ message: "Error in create new product", data: null });
-//   }
-// };
+    const start = parsePrice(startingPrice, "Starting price");
+    if (!start.ok)
+      return res.status(400).json({ success: false, message: start.error });
 
-// export const launchProduct = async (req: Request, res: Response) => {
-//   try {
-//     const productId = req.params.productId as string;
+    const buyNow = parsePrice(buyNowPrice, "Buy now price");
+    if (!buyNow.ok)
+      return res.status(400).json({ success: false, message: buyNow.error });
 
-//     const user = req.authUser;
+    if (buyNow.value <= start.value) {
+      return res.status(400).json({
+        success: false,
+        message: "Buy now price must be greater than the starting price",
+      });
+    }
 
-//     if (!user) {
-//       return res
-//         .status(400)
-//         .json({ message: "User not found in mid", data: null });
-//     }
+    if (!imageFile || !imageFile.path) {
+      return res
+        .status(400)
+        .json({ success: false, message: "At least 1 photo is required" });
+    }
 
-//     // check if product exist
-//     const isProductExist = await prisma.product.findUnique({
-//       where: {
-//         id: productId,
-//       },
-//     });
+    //   get the image url
+    const cloudinaryResponse = await uploadOnCloudinary(imageFile.path);
 
-//     if (!isProductExist) {
-//       return res.status(404).json({ message: "Product not found", data: null });
-//     }
+    if (!cloudinaryResponse?.secure_url) {
+      fs.unlink(imageFile.path);
+      return res
+        .status(500)
+        .json({ message: "cloudinary secure url not found", data: null });
+    }
 
-//     // create a auction
-//     const newAuction = await prisma.auction.create({
-//       data: {
-//         ownerId: user.id,
-//         productId: launchedProduct.id,
-//         auctionDuration: launchedProduct.durationInSeconds,
-//         startTime: new Date().toISOString(),
-//         startingPrice: launchedProduct.initialPrice,
-//       },
-//     });
+    const newProduct = await prisma.product.create({
+      data: {
+        name: name.trim(),
+        description: description.trim(),
+        startingPrice: start.value,
+        buyNowPrice: buyNow.value,
+        ownerId: user.id,
+        image: cloudinaryResponse.secure_url,
+        image_public_id: cloudinaryResponse.public_id,
+      },
+    });
 
-//     // create entry in redis
-//     await initAuctionInRedis({
-//       ...newAuction,
-//       startingPrice: newAuction.startingPrice.toNumber(),
-//       finalBidPrice: newAuction.finalBidPrice?.toNumber() ?? null,
-//     });
-
-//     return res
-//       .status(200)
-//       .json({ message: "Product launched", data: launchedProduct });
-//   } catch (error) {
-//     console.log(error);
-//     return res
-//       .status(500)
-//       .json({ message: "Error in launch product", data: null });
-//   }
-// };
-
-// export const deleteProduct = async (req: Request, res: Response) => {
-//   try {
-//     const productId = req.params.productId as string;
-
-//     if (!productId) {
-//       return res
-//         .status(404)
-//         .json({ message: "product id not found", data: null });
-//     }
-
-//     // check if its exist
-//     const isExistingProduct = await prisma.product.findUnique({
-//       where: {
-//         id: productId,
-//       },
-//     });
-
-//     if (!isExistingProduct) {
-//       return res.status(404).json({ message: "Product not found", data: null });
-//     }
-
-//     // delete the product
-//     await prisma.product.delete({
-//       where: {
-//         id: productId,
-//       },
-//     });
-
-//     return res
-//       .status(200)
-//       .json({ message: "Product deleted successfully", data: null });
-//   } catch (error) {
-//     console.log(error);
-//     return res
-//       .status(500)
-//       .json({ message: "Error in delete product", data: null });
-//   }
-// };
-
-// export const getAllProducts = async (req: Request, res: Response) => {
-//   try {
-//     const user = req.authUser;
-
-//     if (!user) {
-//       return res
-//         .status(400)
-//         .json({ message: "User not in middleware", data: null });
-//     }
-
-//     const allProducts = await prisma.product.findMany({
-//       where: {
-//         ownerId: user.id,
-//       },
-//     });
-
-//     return res
-//       .status(200)
-//       .json({ message: "All products owned by user", data: allProducts });
-//   } catch (error) {
-//     console.log(error);
-//     return res
-//       .status(500)
-//       .json({ message: "Error while getting all products", data: null });
-//   }
-// };
-
-// export const getTheProduct = async (req: Request, res: Response) => {
-//   try {
-//     const productId = req.params.id as string;
-
-//     if (!productId) {
-//       return res
-//         .status(400)
-//         .json({ message: "id not found in params", data: null });
-//     }
-
-//     const existingProduct = await prisma.product.findUnique({
-//       where: {
-//         id: productId,
-//       },
-//     });
-
-//     if (!existingProduct) {
-//       return res
-//         .status(404)
-//         .json({ message: "product not found!", data: null });
-//     }
-
-//     return res
-//       .status(200)
-//       .json({ message: "get the product", data: existingProduct });
-//   } catch (error) {
-//     console.log(error);
-//     return res
-//       .status(500)
-//       .json({ message: "Error in getting product by id", data: null });
-//   }
-// };
+    return res.status(201).json({
+      success: true,
+      message: "New product created!",
+      data: newProduct,
+    });
+  } catch (error) {
+    console.error("createNewProduct:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Error creating product", data: null });
+  }
+};
