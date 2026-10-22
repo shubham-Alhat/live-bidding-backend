@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+
 import { uploadOnCloudinary } from "../lib/cloudinary.js";
 import { prisma } from "../db/prisma.js";
 import { initAuctionInRedis } from "../websocket/handlers/helper.js";
@@ -134,6 +135,53 @@ export const getAllSellerProducts = async (req: Request, res: Response) => {
     console.log("Error while fetching sellers products");
     return res.status(500).json({
       message: "Error while fetchings products",
+      data: null,
+    });
+  }
+};
+
+export const deleteProduct = async (req: Request, res: Response) => {
+  try {
+    const productId = req.params.productId as string;
+
+    if (!productId) {
+      return res
+        .status(400)
+        .json({ message: "product id not found in params", data: null });
+    }
+
+    const user = req.authUser;
+
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized", data: null });
+    }
+
+    // delete the product
+    const deletedProduct = await prisma.product.delete({
+      where: {
+        ownerId: user.id,
+        id: productId,
+      },
+    });
+
+    if (!deletedProduct || !deletedProduct.image_public_id) {
+      return res
+        .status(400)
+        .json({ message: "Deleted product not found", data: null });
+    }
+
+    // remove the file uploaded on cloudinary
+    await cloudinary.uploader.destroy(deletedProduct.image_public_id, {
+      invalidate: true, // clear from cdn cache
+    });
+
+    return res
+      .status(200)
+      .json({ message: "Product deleted successfully", data: null });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Error while deleting product",
       data: null,
     });
   }

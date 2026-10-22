@@ -3,6 +3,7 @@ import authMiddleware from "../middleware/auth.middleware.js";
 import { upload } from "../middleware/multer.middleware.js";
 import {
   createNewProduct,
+  deleteProduct,
   getAllSellerProducts,
 } from "../controllers/product.controller.js";
 
@@ -13,7 +14,7 @@ router
   .post(authMiddleware, upload.single("image"), createNewProduct);
 
 // router.route("/launch/:productId").put(authMiddleware, launchProduct);
-// router.route("/:productId").delete(authMiddleware, deleteProduct);
+router.route("/:productId").delete(authMiddleware, deleteProduct);
 router.route("/get-all").get(authMiddleware, getAllSellerProducts);
 // router.route("/:id").get(authMiddleware, getTheProduct);
 
