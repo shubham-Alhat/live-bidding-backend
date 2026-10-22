@@ -1,7 +1,10 @@
 import { Router } from "express";
 import authMiddleware from "../middleware/auth.middleware.js";
 import { upload } from "../middleware/multer.middleware.js";
-import { createNewProduct } from "../controllers/product.controller.js";
+import {
+  createNewProduct,
+  getAllSellerProducts,
+} from "../controllers/product.controller.js";
 
 const router = Router();
 
@@ -11,7 +14,7 @@ router
 
 // router.route("/launch/:productId").put(authMiddleware, launchProduct);
 // router.route("/:productId").delete(authMiddleware, deleteProduct);
-// router.route("/get-all").get(authMiddleware, getAllProducts);
+router.route("/get-all").get(authMiddleware, getAllSellerProducts);
 // router.route("/:id").get(authMiddleware, getTheProduct);
 
 export default router;

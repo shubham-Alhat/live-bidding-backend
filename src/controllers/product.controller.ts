@@ -110,3 +110,31 @@ export const createNewProduct = async (req: Request, res: Response) => {
       .json({ success: false, message: "Error creating product", data: null });
   }
 };
+
+export const getAllSellerProducts = async (req: Request, res: Response) => {
+  try {
+    const seller = req.authUser;
+
+    if (!seller || !seller.id) {
+      return res.status(401).json({ message: "Unauthorized", data: null });
+    }
+
+    // fetch all products here
+    const products = await prisma.product.findMany({
+      where: {
+        ownerId: seller.id,
+      },
+    });
+
+    return res.status(200).json({
+      message: "Seller products fetched successfully",
+      data: products,
+    });
+  } catch (error) {
+    console.log("Error while fetching sellers products");
+    return res.status(500).json({
+      message: "Error while fetchings products",
+      data: null,
+    });
+  }
+};
