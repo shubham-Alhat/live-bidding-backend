@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { prisma } from "../db/prisma.js";
 import { uploadOnCloudinary } from "../lib/cloudinary.js";
+import { v2 as cloudinary } from "cloudinary";
 
 export const getAllShowsOfSeller = async (req: Request, res: Response) => {
   try {
@@ -83,6 +84,7 @@ export const createNewShow = async (req: Request, res: Response) => {
         name: showTitle,
         description: showDescription,
         thumbnail: cloudinaryResponse.secure_url,
+        thumbnail_public_id: cloudinaryResponse.public_id,
         ownerId: user.id,
         scheduledAt: startsAtDate,
         tags: JSON.parse(tags),
@@ -103,6 +105,51 @@ export const createNewShow = async (req: Request, res: Response) => {
     return res
       .status(500)
       .json({ message: "Error in create new show", data: null });
+  }
+};
+
+export const deleteShow = async (req: Request, res: Response) => {
+  try {
+    const showId = req.params.showId as string;
+
+    if (!showId) {
+      return res
+        .status(400)
+        .json({ message: "show id not found in params", data: null });
+    }
+
+    const user = req.authUser;
+
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized", data: null });
+    }
+
+    const deletedShow = await prisma.show.delete({
+      where: {
+        id: showId,
+        ownerId: user.id,
+      },
+    });
+
+    if (!deletedShow) {
+      return res
+        .status(404)
+        .json({ message: "deleted show not found in db", data: null });
+    }
+
+    // also delete the thumbnail from cloudinary
+    await cloudinary.uploader.destroy(deletedShow.thumbnail_public_id, {
+      invalidate: true,
+    });
+
+    return res
+      .status(200)
+      .json({ message: "show deleted successfully", data: null });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Error while deleting show", data: null });
   }
 };
 

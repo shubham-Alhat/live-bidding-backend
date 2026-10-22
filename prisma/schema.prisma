@@ -104,6 +104,7 @@ model Show {
   name            String
   description     String
   thumbnail       String
+  thumbnail_public_id String
   ownerId         String
   owner           User     @relation("UserownsShows", fields: [ownerId], references: [id], onDelete: Cascade)
   status          STATUS   @default(SCHEDULED)

@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 
 import { uploadOnCloudinary } from "../lib/cloudinary.js";
 import { prisma } from "../db/prisma.js";
-import { initAuctionInRedis } from "../websocket/handlers/helper.js";
+
 import { v2 as cloudinary } from "cloudinary";
 
 // helper function
