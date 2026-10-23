@@ -108,7 +108,7 @@ export const createNewShow = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteShow = async (req: Request, res: Response) => {
+export const deleteShowById = async (req: Request, res: Response) => {
   try {
     const showId = req.params.showId as string;
 

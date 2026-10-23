@@ -3,7 +3,7 @@ import authMiddleware from "../middleware/auth.middleware.js";
 import { upload } from "../middleware/multer.middleware.js";
 import {
   createNewShow,
-  deleteShow,
+  deleteShowById,
   getAllShowsOfSeller,
   getShowById,
   getShowMetaData,
@@ -13,7 +13,7 @@ const router = Router();
 
 router.route("/get-all").get(authMiddleware, getAllShowsOfSeller);
 
-router.route("/:showId").delete(authMiddleware, deleteShow);
+router.route("/:showId").delete(authMiddleware, deleteShowById);
 
 router
   .route("/create")
