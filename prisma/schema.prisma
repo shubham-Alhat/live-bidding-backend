@@ -14,6 +14,8 @@ model User {
   username         String    @unique
   email            String    @unique
   password         String
+  avatar           String?
+  bio              String?
   refreshToken     String?
   isVerifiedSeller Boolean   @default(false)
   products         Product[] @relation("UserOwnsProduct")
