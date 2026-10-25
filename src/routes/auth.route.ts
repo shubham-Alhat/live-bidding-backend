@@ -6,10 +6,12 @@ import {
   logoutUser,
   refreshAccessToken,
   signupUser,
+  updateProfile,
 } from "../controllers/auth.controller.js";
 import authMiddleware from "../middleware/auth.middleware.js";
 import passport from "passport";
 import { handleOAuthCallback } from "../lib/handleOAuthCallback.js";
+import { upload } from "../middleware/multer.middleware.js";
 
 const router = Router();
 
@@ -18,6 +20,10 @@ router.route("/login").post(loginUser);
 router.route("/signup").post(signupUser);
 
 router.route("/get-user").get(authMiddleware, getCurrentUser);
+
+router
+  .route("/profile")
+  .post(authMiddleware, upload.single("image"), updateProfile);
 
 router.route("/get-seller").get(authMiddleware, getCurrentSeller);
 
