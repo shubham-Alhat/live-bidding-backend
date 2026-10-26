@@ -186,12 +186,25 @@ export const getShowById = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "show not found!", data: null });
     }
 
-    return res.status(200).json({ message: "Your show", data: existingShow });
+    // fetch all products here
+    const sellerProducts = await prisma.product.findMany({
+      where: {
+        ownerId: user.id,
+      },
+    });
+
+    return res.status(200).json({
+      message: "Your show & products are here",
+      data: { show: existingShow, sellerProducts: sellerProducts },
+    });
   } catch (error) {
     console.log(error);
     return res
       .status(500)
-      .json({ message: "Error in getting show by id", data: null });
+      .json({
+        message: "Error in getting show by id and products",
+        data: null,
+      });
   }
 };
 
