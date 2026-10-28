@@ -9,7 +9,7 @@ import { v2 as cloudinary } from "cloudinary";
 const MIN_PRICE = 1;
 const MAX_PRICE = 10_000_000;
 
-import fs from "fs/promises";
+import fs from "fs";
 
 type PriceResult = { ok: true; value: number } | { ok: false; error: string };
 
@@ -81,7 +81,7 @@ export const createNewProduct = async (req: Request, res: Response) => {
     const cloudinaryResponse = await uploadOnCloudinary(imageFile.path);
 
     if (!cloudinaryResponse?.secure_url) {
-      fs.unlink(imageFile.path);
+      fs.promises.unlink(imageFile.path);
       return res
         .status(500)
         .json({ message: "cloudinary secure url not found", data: null });
@@ -109,6 +109,8 @@ export const createNewProduct = async (req: Request, res: Response) => {
     return res
       .status(500)
       .json({ success: false, message: "Error creating product", data: null });
+  } finally {
+    if (req.file?.path) await fs.promises.unlink(req.file.path).catch(() => {});
   }
 };
 

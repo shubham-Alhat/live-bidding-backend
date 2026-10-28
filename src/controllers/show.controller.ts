@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { prisma } from "../db/prisma.js";
 import { uploadOnCloudinary } from "../lib/cloudinary.js";
 import { v2 as cloudinary } from "cloudinary";
+import fs from "fs";
 
 export const getAllShowsOfSeller = async (req: Request, res: Response) => {
   try {
@@ -105,6 +106,8 @@ export const createNewShow = async (req: Request, res: Response) => {
     return res
       .status(500)
       .json({ message: "Error in create new show", data: null });
+  } finally {
+    if (req.file?.path) await fs.promises.unlink(req.file.path).catch(() => {});
   }
 };
 
@@ -199,12 +202,10 @@ export const getShowById = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.log(error);
-    return res
-      .status(500)
-      .json({
-        message: "Error in getting show by id and products",
-        data: null,
-      });
+    return res.status(500).json({
+      message: "Error in getting show by id and products",
+      data: null,
+    });
   }
 };
 
