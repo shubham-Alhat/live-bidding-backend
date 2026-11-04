@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "../db/prisma.js";
+import { initAuctionInRedis } from "../websocket/handlers/helper.js";
 
 export const getAllLiveAuctions = async (req: Request, res: Response) => {
   try {
@@ -102,5 +103,57 @@ export const getAuctionByProductId = async (req: Request, res: Response) => {
     return res
       .status(500)
       .json({ message: "Error in auction by productId", data: null });
+  }
+};
+
+export const launchAuction = async (req: Request, res: Response) => {
+  try {
+    const user = req.authUser;
+
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized", data: null });
+    }
+
+    const { auctionDuration, productId, startingPrice } = req.body as {
+      auctionDuration: number;
+      productId: string;
+      startingPrice: number;
+    };
+
+    if (!productId || !auctionDuration || !startingPrice) {
+      return res.status(400).json({
+        message: "productId OR Duration OR startingPrice not found",
+        data: null,
+      });
+    }
+
+    // get the product
+
+    const newAuction = await prisma.auction.create({
+      data: {
+        auctionDuration: auctionDuration,
+        startingPrice: startingPrice,
+        startTime: new Date(),
+        ownerId: user.id,
+        productId: productId,
+        status: "ACTIVE",
+      },
+    });
+
+    // init auction in redis
+    await initAuctionInRedis({
+      ...newAuction,
+      startingPrice: Number(newAuction.startingPrice.toNumber()),
+      finalBidPrice: Number(newAuction.finalBidPrice?.toNumber()),
+    });
+
+    return res
+      .status(201)
+      .json({ message: "Auction created successfully", data: newAuction });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Error while launching Auction", data: null });
   }
 };

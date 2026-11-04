@@ -9,7 +9,7 @@ export interface User {
 }
 
 // Enum for Auction status
-type AuctionStatus = "ACTIVE" | "ENDED";
+type AuctionStatus = "ACTIVE" | "ENDED" | "SCHEDULED";
 
 // Bid interface
 export interface Bid {

@@ -4,6 +4,7 @@ import {
   getAllLiveAuctions,
   getAuctionById,
   getAuctionByProductId,
+  launchAuction,
 } from "../controllers/auction.controller.js";
 
 const router = Router();
@@ -16,5 +17,7 @@ router
 router
   .route("/get-by-productId/:id")
   .get(authMiddleware, getAuctionByProductId);
+
+router.route("/launch").post(authMiddleware, launchAuction);
 
 export default router;
