@@ -1,5 +1,7 @@
 # BidHub — Live Bidding Platform
 
+<!-- this is new branch -->
+
 [BidHub](https://bidhub.in) is a real-time auction platform where users can join live auctions and place bids.
 
 > [!Note]  
